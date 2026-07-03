@@ -732,20 +732,17 @@
                 <div class="terminal reveal" style="margin: 0;">
                     <div class="term-header">
                         <div class="term-dots"><span class="dot" style="background:#EF4444"></span><span class="dot" style="background:#F59E0B"></span><span class="dot" style="background:#00E676"></span></div>
-                        <span class="term-title">compliance_check.log</span>
+                        <span class="term-title">PANTHEON_CORE_PWN</span>
                     </div>
-                    <div class="term-body" style="min-height: auto;">
-                        <span class="t-red">[!] VIOLATION: Ст. 19 п. 3 152-ФЗ</span><br>
-                        <span class="t-muted">Desc: Передача ПДн по HTTP</span><br>
-                        <span class="t-muted">Fine: 100,000 - 300,000 ₽</span><br><br>
-                        <span class="t-yellow">[!] VIOLATION: Ст. 18 п. 2 152-ФЗ</span><br>
-                        <span class="t-muted">Desc: Политика отсутствует</span><br>
-                        <span class="t-muted">Fine: 30,000 - 50,000 ₽</span><br><br>
-                        <span class="t-yellow">[!] VIOLATION: Ст. 18 п. 5 152-ФЗ</span><br>
-                        <span class="t-muted">Desc: Google Analytics (Трансграничная)</span><br>
-                        <span class="t-muted">Fine: 100,000 - 300,000 ₽</span><br><br>
-                        <span class="t-green">[+] Docs generated: 8/8 Ready</span>
-                    </div>
+<div class="term-body" style="min-height: auto; text-align: left; padding-top: 4px;">
+<span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> <span style="color: #FFFFFF;">pantheon scan --tier law example.com</span>
+<span style="color: #9CA3AF;">[*] THEMIS: Analyzing compliance...</span>
+<span style="color: #EF4444;">[!] VIOLATION: Ст. 19 п. 3 152-ФЗ — Передача ПДн по HTTP</span>
+<span style="color: #F59E0B;">[!] VIOLATION: Ст. 18 п. 2 152-ФЗ — Политика отсутствует</span>
+<span style="color: #F59E0B;">[!] VIOLATION: Ст. 18 п. 5 152-ФЗ — Google Analytics (Трансграничная)</span>
+<span style="color: #F59E0B;">[+] Fine total: 430,000 - 650,000 ₽</span>
+<span style="color: #00E676;">[+] APOLLON: Docs generated 8/8 Ready</span>
+</div>
                 </div>
             </div>
         </div>
