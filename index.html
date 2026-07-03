@@ -548,18 +548,18 @@
                 </div>
             </div>
 
-            <div class="arch-code reveal" style="text-align: left;">
-<span style="color: #6B7280;"> 1</span>  <span style="color: #6B7280;"># Context-Aware Pipeline (God Mode)</span>
-<span style="color: #6B7280;"> 2</span>  <span style="color: #6B7280;"># L1 module writes to shared context</span>
-<span style="color: #6B7280;"> 3</span>  <span style="color: #00D4FF;">ctx</span>[<span style="color: #F59E0B;">'open_ports'</span>] = {<span style="color: #F59E0B;">3306</span>: <span style="color: #F59E0B;">'MySQL'</span>}
-<span style="color: #6B7280;"> 4</span>  <span style="color: #00D4FF;">ctx</span>[<span style="color: #F59E0B;">'origin_ip'</span>] = <span style="color: #F59E0B;">'185.15.20.30'</span>
-<span style="color: #6B7280;"> 5</span>  <span style="color: #00D4FF;">ctx</span>[<span style="color: #F59E0B;">'tech_stack'</span>] = [<span style="color: #F59E0B;">'Bitrix'</span>]
-<span style="color: #6B7280;"> 6</span>
-<span style="color: #6B7280;"> 7</span>  <span style="color: #6B7280;"># L2 module reads context and strikes</span>
-<span style="color: #6B7280;"> 8</span>  <span style="color: #C792EA;">if</span> <span style="color: #F59E0B;">3306</span> <span style="color: #C792EA;">in</span> <span style="color: #00D4FF;">ctx</span>[<span style="color: #F59E0B;">'open_ports'</span>]:
-<span style="color: #6B7280;"> 9</span>      <span style="color: #00E676;">check_anonymous</span>(<span style="color: #00D4FF;">ctx</span>[<span style="color: #F59E0B;">'origin_ip'</span>])
-<span style="color: #6B7280;">10</span>      <span style="color: #C792EA;">if</span> <span style="color: #00E676;">is_vulnerable</span>():
-<span style="color: #6B7280;">11</span>          <span style="color: #00E676;">report</span>(<span style="color: #F59E0B;">"HIGH: DB Access"</span>)
+            <div class="arch-code reveal" style="text-align: left; white-space: pre; font-family: var(--font-mono); font-size: 12px; line-height: 1.6;">
+<font color="#6B7280"> 1</font>  <font color="#6B7280"># Context-Aware Pipeline (God Mode)</font>
+<font color="#6B7280"> 2</font>  <font color="#6B7280"># L1 module writes to shared context</font>
+<font color="#6B7280"> 3</font>  <font color="#00D4FF">ctx</font>[<font color="#F59E0B">'open_ports'</font>] = {<font color="#F59E0B">3306</font>: <font color="#F59E0B">'MySQL'</font>}
+<font color="#6B7280"> 4</font>  <font color="#00D4FF">ctx</font>[<font color="#F59E0B">'origin_ip'</font>] = <font color="#F59E0B">'185.15.20.30'</font>
+<font color="#6B7280"> 5</font>  <font color="#00D4FF">ctx</font>[<font color="#F59E0B">'tech_stack'</font>] = [<font color="#F59E0B">'Bitrix'</font>]
+<font color="#6B7280"> 6</font>
+<font color="#6B7280"> 7</font>  <font color="#6B7280"># L2 module reads context and strikes</font>
+<font color="#6B7280"> 8</font>  <font color="#C792EA">if</font> <font color="#F59E0B">3306</font> <font color="#C792EA">in</font> <font color="#00D4FF">ctx</font>[<font color="#F59E0B">'open_ports'</font>]:
+<font color="#6B7280"> 9</font>      <font color="#00E676">check_anonymous</font>(<font color="#00D4FF">ctx</font>[<font color="#F59E0B">'origin_ip'</font>])
+<font color="#6B7280">10</font>      <font color="#C792EA">if</font> <font color="#00E676">is_vulnerable</font>():
+<font color="#6B7280">11</font>          <font color="#00E676">report</font>(<font color="#F59E0B">"HIGH: DB Access"</font>)
             </div>
 
             <div class="modules-grid">
