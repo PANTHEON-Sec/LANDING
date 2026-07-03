@@ -94,7 +94,7 @@
         .term-dots { display: flex; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
         .term-title { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-left: 8px; }
-        .term-body { padding: 16px; font-family: var(--font-mono); font-size: 11px; line-height: 1.8; color: var(--text-secondary); min-height: 320px; white-space: pre; overflow-x: auto; }
+        .term-body { padding: 16px; font-family: var(--font-mono); font-size: 11px; line-height: 1.4; color: var(--text-secondary); min-height: 320px; white-space: pre; overflow-x: auto; }
         .t-green { color: #00E676; } .t-blue { color: #00D4FF; } .t-purple { color: #C792EA; } .t-red { color: #EF4444; } .t-yellow { color: #F59E0B; } .t-muted { color: #9CA3AF; } .t-white { color: #FFFFFF; }
         .cursor { display: inline-block; width: 8px; height: 14px; background: #00D4FF; animation: blink 1s steps(2) infinite; vertical-align: text-bottom; }
         @keyframes blink { 0% { opacity: 0; } 50% { opacity: 1; } }
@@ -122,7 +122,7 @@
         .gm-packet.red { background: var(--critical); animation: packet-move 2s linear infinite; }
         .gm-packet.green { background: var(--primary); animation: packet-move 2s linear infinite 1s; }
         @keyframes packet-move { 0% { left: 0; } 100% { left: 100%; } }
-        .gm-text { margin-top: 32px; font-size: 14px; color: var(--text-muted); line-height: 1.8; }
+        .gm-text { margin-top: 32px; font-size: 14px; color: var(--text-muted); line-height: 1.4; }
         
         /* --- BATTLE METRICS --- */
         .battle-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 32px; }
@@ -174,7 +174,7 @@
         .arch-pulse { position: absolute; top: 30px; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 8px var(--accent); animation: pulse-move 3s linear infinite; }
         @keyframes pulse-move { 0% { left: 15%; } 100% { left: 85%; } }
         
-        .arch-code { background: #05070A; border: 1px solid var(--border); border-radius: 8px; padding: 24px; font-family: var(--font-mono); font-size: 12px; margin-top: 24px; line-height: 1.8; }
+        .arch-code { background: #05070A; border: 1px solid var(--border); border-radius: 8px; padding: 24px; font-family: var(--font-mono); font-size: 12px; margin-top: 24px; line-height: 1.4; }
         .code-comment { color: var(--text-muted); }
         .code-keyword { color: var(--accent); }
         .code-string { color: var(--high); }
@@ -459,18 +459,16 @@
                 <div class="terminal reveal">
                     <div class="term-header">
                         <div class="term-dots"><span class="dot" style="background:#EF4444"></span><span class="dot" style="background:#F59E0B"></span><span class="dot" style="background:#00E676"></span></div>
-                        <span class="term-title">finding_cwe-89.log</span>
+                        <span class="term-title">PANTHEON_CORE_PWN</span>
                     </div>
                     <div class="term-body" style="min-height: auto;">
-                        <span class="t-green">➜</span> <span class="t-blue">pantheon</span> <span class="t-purple">validate</span> <span class="t-yellow">/api/search?q=test</span><br>
-                        <span class="t-muted">[*] Sending math payload: 7*2...</span><br>
-                        <span class="t-muted">[*] Response received (200 OK). Analyzing body...</span><br>
-                        <span class="t-green">[+] Mathematical result "14" found in response.</span><br>
-                        <span class="t-red">[!] CRITICAL: SQL Injection confirmed (CWE-89)</span><br>
-                        <span class="t-muted">[*] Calculating business impact...</span><br>
-                        <span class="t-yellow">[+] Damage: 1,500,000 ₽ (DB Dump risk)</span><br>
-                        <span class="t-yellow">[+] RKN Fine: 500,000 ₽ (152-FZ violation)</span><br>
-                        <span class="t-muted">[*] Generating PoC & Fix instructions...</span>
+                        <span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> <span style="color: #FFFFFF;">curl -sI 'https://target.com/api/search?q=test%27%20UNION...'</span><br>
+                        <span style="color: #9CA3AF;">HTTP/1.1 200 OK</span><br>
+                        <span style="color: #9CA3AF;">Server: nginx/1.24.0</span><br>
+                        <span style="color: #9CA3AF;">X-Powered-By: PHP/8.2</span><br>
+                        <span style="color: #EF4444;">[!] SQL Injection confirmed (CWE-89)</span><br>
+                        <span style="color: #F59E0B;">[+] Damage: 1,500,000 ₽ | RKN Fine: 500,000 ₽</span><br>
+                        <span style="color: #00E676;">[+] PoC generated | Fix: PreparedStatement</span>
                     </div>
                 </div>
             </div>
