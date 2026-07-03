@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANTHEON CORE — экспертный аудит безопасности</title>
+    <meta name="description" content="PANTHEON CORE — автоматический аудит безопасности веб-приложений. 81 модуль, 152-ФЗ, Kill Chain, MITRE ATT&CK.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0A0C10;
+            --bg-card: #11141A;
+            --bg-surface: #181C24;
+            --bg-terminal: #0D1117;
+            --border: rgba(255,255,255,0.06);
+            --border-accent: rgba(0,240,255,0.3);
+            --primary: #00E676;
+            --accent: #00D4FF;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --text-main: #EAECEF;
+            --text-muted: #8B949E;
+            --text-dim: #5C6773;
+            --font-ui: 'Inter', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg-deep); position: relative; color: var(--text-main); font-family: var(--font-ui); font-size: 0.8rem; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+        .container { max-width: 1060px; position: relative; z-index: 1; margin: 0 auto; padding: 20px 24px 0; }
+        a { color: var(--accent); text-decoration: none; transition: color 0.2s; }
+        a:hover { color: var(--primary); }
+
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .logo-svg { width: 36px; height: 36px; flex-shrink: 0; }
+        .brand-text h1 { font-size: 0.95rem; font-weight: 600; letter-spacing: -0.02em; }
+        .brand-text .tagline { font-family: var(--font-mono); font-size: 0.5rem; color: var(--accent); letter-spacing: 0.04em; margin-top: 0; }
+        .main-nav { display: flex; gap: 16px; font-size: 0.7rem; flex-wrap: wrap; }
+        .main-nav a { color: var(--text-muted); transition: color 0.2s; position: relative; }
+        .main-nav a:hover { color: var(--text-main); }
+        .main-nav a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1.5px; background: var(--accent); transition: width 0.3s; }
+        .main-nav a:hover::after { width: 100%; }
+
+        .section-title { font-size: 1.05rem; font-weight: 700; margin: 36px 0 12px; display: flex; align-items: center; gap: 10px; }
+        .section-title::before { content: ""; width: 3px; height: 18px; background: var(--accent); border-radius: 2px; flex-shrink: 0; }
+        .section-sub { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px; max-width: 680px; line-height: 1.7; }
+
+        .hero { padding: 14px 0 20px; }
+        .hero h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.15; }
+        .hero h1 .highlight { color: var(--accent); }
+        .hero .subtitle { font-size: 0.9rem; color: var(--text-muted); max-width: 700px; line-height: 1.8; margin-bottom: 18px; }
+        .hero-stats { display: flex; gap: 20px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 16px; }
+        .hero-stats .stat-item { text-align: center; }
+        .hero-stats .stat-item .number { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; }
+        .hero-stats .stat-item .label { font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; transition: border-color 0.2s, transform 0.2s; }
+        .card:hover { border-color: rgba(255,255,255,0.12); transform: translateY(-2px); }
+        .card-accent { border-left: 3px solid var(--accent); }
+        .card-success { border-left: 3px solid var(--primary); }
+        .card-warning { border-left: 3px solid var(--warning); }
+        .card-danger { border-left: 3px solid var(--danger); }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 18px; }
+        .card h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+        .card p { font-size: 0.75rem; color: var(--text-muted); line-height: 1.7; }
+        .card .stat { display: inline-block; font-family: var(--font-mono); font-size: 0.6rem; padding: 2px 8px; border-radius: 4px; margin-top: 6px; }
+        .stat-accent { background: rgba(0,212,255,0.1); color: var(--accent); }
+        .stat-success { background: rgba(0,230,118,0.1); color: var(--primary); }
+        .stat-danger { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .stat-warning { background: rgba(245,158,11,0.1); color: var(--warning); }
+
+        .terminal { background: var(--bg-terminal); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin: 12px 0 18px; }
+        .terminal-header { display: flex; align-items: center; gap: 8px; padding: 5px 10px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+        .terminal-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .terminal-dot.red { background: #FF5F57; }
+        .terminal-dot.yellow { background: #FEBC2E; }
+        .terminal-dot.green { background: #28C840; }
+        .terminal-title { font-family: var(--font-mono); font-size: 0.55rem; color: var(--text-muted); margin-left: 8px; }
+        .terminal-body { padding: 10px 12px; font-family: var(--font-mono); font-size: 0.65rem; line-height: 1.6; color: #E5E7EB; overflow-x: auto; white-space: pre-wrap; text-align: left; }
+        .terminal-body .prompt { color: var(--accent); }
+        .terminal-body .output { color: var(--text-muted); }
+        .terminal-body .highlight-success { color: var(--primary); }
+        .terminal-body .highlight-danger { color: var(--danger); }
+        .terminal-body .l1 { color: var(--accent); }
+        .terminal-body .l2 { color: var(--primary); }
+        .terminal-body .l3 { color: var(--warning); }
+        .terminal-body .cash { color: var(--danger); }
+
+        .module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 8px; margin: 12px 0 18px; }
+        .module-group { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+        .module-group h4 { font-size: 0.7rem; font-weight: 600; margin-bottom: 3px; }
+        .module-group .mod-count { font-size: 0.55rem; color: var(--text-muted); margin-bottom: 4px; }
+        .module-tag { display: inline-block; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 2px 5px; font-family: var(--font-mono); font-size: 0.45rem; color: var(--text-muted); margin: 1px; }
+        .module-tag-highlight { border-color: var(--accent); color: var(--accent); }
+
+        .pain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin: 12px 0 18px; }
+        .pain-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; border-left: 3px solid var(--danger); }
+        .pain-item .icon { font-size: 1.2rem; margin-bottom: 4px; }
+        .pain-item h4 { font-size: 0.8rem; font-weight: 600; margin-bottom: 3px; }
+        .pain-item p { font-size: 0.73rem; color: var(--text-muted); line-height: 1.6; }
+        .pain-item .stat { font-family: var(--font-mono); font-size: 0.6rem; color: var(--danger); background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+
+        .expert-quote { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 22px; margin: 18px 0; border-left: 4px solid var(--accent); }
+        .expert-quote .text { font-size: 0.85rem; color: var(--text-main); line-height: 1.7; font-style: italic; }
+        .expert-quote .author { margin-top: 8px; font-weight: 600; color: var(--text-muted); font-size: 0.75rem; }
+        .expert-quote .author span { color: var(--accent); }
+
+        .solution-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 12px 0 18px; }
+        .solution-step { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; text-align: center; }
+        .solution-step .num { font-family: var(--font-mono); font-size: 0.6rem; color: var(--accent); background: rgba(0,212,255,0.1); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 4px; }
+        .solution-step h4 { font-size: 0.8rem; font-weight: 600; }
+        .solution-step p { font-size: 0.7rem; color: var(--text-muted); line-height: 1.6; }
+        .solution-step .time { font-family: var(--font-mono); font-size: 0.55rem; color: var(--text-dim); display: block; margin-top: 4px; }
+
+        .chain { display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap; padding: 12px 0; margin: 10px 0 14px; background: var(--bg-surface); border-radius: var(--radius); border: 1px solid var(--border); }
+        .chain .node { display: flex; flex-direction: column; align-items: center; padding: 6px 12px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); min-width: 60px; }
+        .chain .node .label { font-family: var(--font-mono); font-size: 0.55rem; font-weight: 700; }
+        .chain .node .count { font-size: 0.45rem; color: var(--text-muted); }
+        .chain .node.accent { border-color: var(--accent); }
+        .chain .node.success { border-color: var(--primary); }
+        .chain .node.warning { border-color: var(--warning); }
+        .chain .node.danger { border-color: var(--danger); }
+        .chain .arrow { color: var(--text-dim); font-size: 1rem; }
+
+        .artifact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 18px; }
+        .artifact-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; transition: border-color 0.2s; }
+        .artifact-item:hover { border-color: var(--border-accent); }
+        .artifact-item .icon { font-size: 1.1rem; margin-bottom: 3px; }
+        .artifact-item .title { font-weight: 600; font-size: 0.78rem; }
+        .artifact-item .desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.6; margin-top: 2px; }
+        .artifact-item .tag { display: inline-block; font-size: 0.45rem; font-family: var(--font-mono); padding: 1px 6px; border-radius: 3px; background: rgba(0,212,255,0.1); color: var(--accent); margin-top: 4px; }
+
+        .eco-table { overflow-x: auto; margin: 12px 0 16px; }
+        .eco-table table { width: 100%; border-collapse: collapse; font-size: 0.7rem; min-width: 380px; }
+        .eco-table th { padding: 6px 8px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 0.55rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+        .eco-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+        .eco-table .danger { color: var(--danger); font-family: var(--font-mono); }
+        .eco-table .success { color: var(--primary); font-family: var(--font-mono); }
+        .eco-table .roi { font-family: var(--font-mono); }
+
+        .report-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0 20px; }
+        .report-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; text-align: center; transition: border-color 0.2s; }
+        .report-card:hover { border-color: var(--border-accent); }
+        .report-card .report-icon { font-size: 2rem; margin-bottom: 8px; }
+        .report-card .report-name { font-size: 0.9rem; font-weight: 700; }
+        .report-card .report-desc { font-size: 0.7rem; color: var(--text-muted); margin: 4px 0 10px; }
+        .report-card .report-stats { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; font-size: 0.65rem; color: var(--text-muted); }
+        .report-card .report-stats span { background: var(--bg-surface); padding: 4px 10px; border-radius: 4px; }
+        .report-card .report-link { display: inline-block; margin-top: 12px; padding: 6px 16px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.7rem; transition: all 0.2s; }
+        .report-card .report-link:hover { border-color: var(--accent); color: var(--accent); }
+
+        .tariff-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 12px 0 16px; }
+        .tariff-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 12px; transition: border-color 0.2s, transform 0.2s; }
+        .tariff-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+        .tariff-card.popular { border-color: var(--accent); background: var(--bg-surface); }
+        .tariff-card .name { font-size: 0.82rem; font-weight: 700; }
+        .tariff-card .price { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; margin: 4px 0 2px; }
+        .tariff-card .period { font-size: 0.5rem; color: var(--text-muted); }
+        .tariff-card ul { list-style: none; padding: 0; margin: 8px 0; font-size: 0.6rem; }
+        .tariff-card ul li { padding: 2px 0 2px 14px; position: relative; color: var(--text-muted); }
+        .tariff-card ul li::before { content: "✓"; position: absolute; left: 0; color: var(--primary); }
+        .tariff-card ul li.muted::before { content: "—"; color: var(--text-dim); }
+        .tariff-card ul li.muted { color: var(--text-dim); }
+
+        .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 18px; }
+        .faq-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+        .faq-item .q { font-weight: 600; color: var(--accent); font-size: 0.78rem; }
+        .faq-item .a { font-size: 0.72rem; color: var(--text-muted); line-height: 1.6; margin-top: 3px; }
+        .footer-full { position: relative; z-index: 1;
+            border-radius: 12px 12px 0 0;
+            width: 100%;
+            background: var(--bg-deep);
+            border-top: 1px solid var(--border);
+            padding: 28px 0 16px;
+            margin-top: 32px;
+        }
+        .footer-full .footer-inner {
+            max-width: 1060px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .footer-expert { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 16px; }
+        .footer-expert .greeting { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .footer-expert .avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; color: var(--bg-deep); flex-shrink: 0; }
+        .footer-expert .name { font-weight: 600; font-size: 0.85rem; }
+        .footer-expert .role { font-size: 0.65rem; color: var(--text-muted); }
+        .footer-expert .message { font-size: 0.75rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+        .footer-expert .contacts { display: flex; gap: 10px; flex-wrap: wrap; }
+        .footer-expert .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text-main); font-size: 0.75rem; transition: all 0.2s; }
+        .footer-expert .btn:hover { border-color: var(--border-accent); transform: translateY(-2px); }
+        .footer-expert .btn.primary { background: var(--primary); color: var(--bg-deep); border-color: var(--primary); }
+        .footer-legal { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; font-size: 0.65rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 12px; }
+        .footer-legal .item { margin-bottom: 3px; }
+        .footer-legal .item strong { color: var(--text-main); }
+        .footer-end { text-align: center; padding: 12px 0 0; border-top: 1px solid var(--border); }
+        .footer-end .copy { font-size: 0.6rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .container { padding: 16px 20px 0; }
+            .header { flex-direction: column; align-items: stretch; gap: 8px; }
+            .main-nav { gap: 8px; justify-content: center; }
+            .hero h1 { font-size: 1.2rem; }
+            .hero .subtitle { font-size: 0.8rem; }
+            .artifact-grid { grid-template-columns: 1fr; }
+            .faq-grid { grid-template-columns: 1fr; }
+            .report-demo { grid-template-columns: 1fr; }
+            .tariff-grid { grid-template-columns: 1fr 1fr; }
+            .module-grid { grid-template-columns: 1fr; }
+            .pain-grid { grid-template-columns: 1fr; }
+            .solution-grid { grid-template-columns: 1fr; }
+            .chain .arrow { transform: rotate(90deg); }
+        }
+        @media (max-width: 480px) {
+            .tariff-grid { grid-template-columns: 1fr; }
+            .hero-stats { gap: 10px; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.6s ease both; }
+        .fade-up:nth-child(2) { animation-delay: 0.1s; }
+        .fade-up:nth-child(3) { animation-delay: 0.2s; }
+        .fade-up:nth-child(4) { animation-delay: 0.3s; }
+        .fade-up:nth-child(5) { animation-delay: 0.4s; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-surface); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+@keyframes twinkle {
+    0% { opacity: 0.2; }
+    100% { opacity: 1; }
+}
+    
+@keyframes float1 { 0%,100% { transform: translate(0,0); opacity:0.3; } 33% { transform: translate(15px,-20px); opacity:0.1; } 66% { transform: translate(-10px,15px); opacity:0.2; } }
+@keyframes float2 { 0%,100% { transform: translate(0,0); opacity:0.2; } 50% { transform: translate(-20px,-10px); opacity:0.3; } }
+@keyframes float3 { 0%,100% { transform: translate(0,0); opacity:0.15; } 25% { transform: translate(10px,20px); opacity:0.25; } 75% { transform: translate(-15px,-5px); opacity:0.1; } }
+
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.08;
+    background-image:
+        linear-gradient(rgba(0,212,255,0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.5) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+
+.aegis-shield svg { width: 100%; height: 100%; }
+@keyframes shieldPulse {
+    0%, 100% { opacity: 0.04; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.08; transform: translate(-50%, -50%) scale(1.03); }
+}
+
+</style>
+</head>
+<body>
+<div class="aegis-shield" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(400px,60vw);height:min(500px,75vw);pointer-events:none;z-index:0;animation:shieldPulse 8s ease-in-out infinite;">
+    <svg viewBox="0 0 100 120" fill="none">
+        <defs>
+            <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.08"/>
+                <stop offset="100%" stop-color="#00E676" stop-opacity="0.03"/>
+            </linearGradient>
+        </defs>
+        <path d="M50 5 L90 25 L85 75 L50 115 L15 75 L10 25 Z" fill="url(#shieldGrad)" stroke="#00D4FF" stroke-width="0.5" stroke-opacity="0.15"/>
+        <circle cx="50" cy="55" r="15" fill="none" stroke="#00D4FF" stroke-width="0.4" stroke-opacity="0.1"/>
+        <circle cx="50" cy="55" r="6" fill="#00D4FF" fill-opacity="0.05"/>
+    </svg>
+</div>
+
+<div class="container">
+    <!-- ════════════════════════════════════════════════════════════
+    HERO — Экспертная версия (голубой акцент)
+    ════════════════════════════════════════════════════════════ -->
+
+    <!-- ════════════════════════════════════════════════════════════
+    HEADER
+    ════════════════════════════════════════════════════════════ -->
+    <header class="header">
+        <div class="brand">
+            <svg class="logo-svg" viewBox="0 0 100 100" fill="none">
+                <defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00E676"/><stop offset="100%" stop-color="#00D4FF"/></linearGradient></defs>
+                <path d="M25 80 L50 20 L75 80" stroke="url(#g1)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="37" y1="52" x2="63" y2="52" stroke="url(#g1)" stroke-width="8" stroke-linecap="round"/>
+                <circle cx="50" cy="20" r="4" fill="url(#g1)"/>
+            </svg>
+            <div class="brand-text">
+                <h1>PANTHEON CORE</h1>
+                <div class="tagline">Автоматический аудит безопасности веб-приложений</div>
+            </div>
+        </div>
+        <nav class="main-nav">
+            <a href="#problem">Проблема</a>
+            <a href="#solution">Решение</a>
+            <a href="#methodology">Методология</a>
+            <a href="#modules">Модули</a>
+            <a href="#artifacts">Артефакты</a>
+            <a href="#economy">Экономика</a>
+            <a href="#demo">Демо</a>
+            <a href="#tariffs">Тарифы</a>
+        </nav>
+    </header>
+    <!-- ════════════════════════════════════════════════════════════
+    HERO — Текст + визуал как фон
+    ════════════════════════════════════════════════════════════ -->
+    
+    
+    <!-- ════════════════════════════════════════════════════════════
+    HERO — Экспертная версия (исправленный шрифт)
+    ════════════════════════════════════════════════════════════ -->
+    <section class="hero fade-up" style="padding: 14px 0 20px; position: relative; overflow: hidden;">
+<div style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;">
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.3);border-radius:50%;top:15%;left:10%;animation:float1 8s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.2);border-radius:50%;top:25%;left:25%;animation:float2 10s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.25);border-radius:50%;top:35%;left:45%;animation:float3 9s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.15);border-radius:50%;top:50%;left:65%;animation:float1 11s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.3);border-radius:50%;top:65%;left:80%;animation:float2 7s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.2);border-radius:50%;top:75%;left:50%;animation:float3 12s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.15);border-radius:50%;top:10%;left:70%;animation:float1 9s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.2);border-radius:50%;top:85%;left:15%;animation:float2 8s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.25);border-radius:50%;top:45%;left:90%;animation:float3 10s ease-in-out infinite;"></div>
+        <div style="position:absolute;width:2px;height:2px;background:rgba(0,212,255,0.15);border-radius:50%;top:55%;left:35%;animation:float1 11s ease-in-out infinite;"></div>
+    </div>
+        <h1 style="font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.2;">
+            <span style="color: var(--accent);">От хаоса из CVE</span> к понятным рискам<br>
+            <span style="color: var(--text-main);">в рублях за 20 минут</span>
+        </h1>
+        <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 700px; line-height: 1.7; margin-bottom: 12px;">
+            Я — Security Researcher и создатель PANTHEON CORE. Я устал видеть, как компании тратят недели на разбор многотомных PDF-отчётов с сотнями абстрактных уязвимостей, которые невозможно приоритизировать. Поэтому я написал свой инструмент.
+        </p>
+        <p style="font-size: 0.78rem; color: var(--text-muted); max-width: 700px; line-height: 1.7; margin-bottom: 12px;">
+            <strong style="color: var(--accent);">PANTHEON CORE</strong> — это не просто сканер. За 20 минут он проходит путь от разведки внешнего периметра до реальной эксплуатации уязвимостей. Система отсекает информационный шум (<strong style="color: var(--accent);">ложные срабатывания &lt;5%</strong>), доказывая жизнеспособность каждой находки через PoC.
+        </p>
+        <div style="background: linear-gradient(135deg, rgba(0,212,255,0.06), rgba(0,212,255,0.01)); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 12px 16px; margin: 10px 0 12px;">
+            <p style="font-size: 0.78rem; line-height: 1.7; color: var(--text-muted); margin: 0;">
+                <strong style="color: var(--accent);">В чём главная разница?</strong> 
+                Я перевожу технический риск на язык бизнеса. Вы видите не просто "Critical" с непонятным вектором атаки, а <strong style="color: var(--accent);">реальный финансовый ущерб в рублях</strong> и ROI от устранения конкретного бага. Каждая цифра — обоснована расчётом.
+            </p>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted); max-width: 700px; line-height: 1.7; margin-bottom: 14px;">
+            <strong style="color: var(--accent);">Результат:</strong> 
+            Живой HTML-отчёт с PoC-кодом, готовыми патчами для разработчиков, дорожной картой P0/P1/P2 и пакетом документов для Роскомнадзора (152-ФЗ). Никакой воды и ручного труда — только факты, с которыми можно работать прямо сейчас.
+        </p>
+        
+        <div style="margin:16px 0 0;overflow-x:auto;">
+            <div style="display:flex;align-items:flex-start;gap:0;min-width:600px;position:relative;padding:8px 0 20px;">
+                <!-- Линия -->
+                <div style="position:absolute;top:18px;left:40px;right:40px;height:2px;background:linear-gradient(90deg,var(--accent),var(--primary),var(--warning),var(--primary),var(--text-main));border-radius:1px;"></div>
+                <!-- 0 мин -->
+                <div style="flex:1;text-align:center;position:relative;z-index:1;">
+                    <div style="width:10px;height:10px;background:var(--accent);border-radius:50%;margin:14px auto 8px;"></div>
+                    <div style="font-weight:700;font-size:0.65rem;">0 мин</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);">Старт</div>
+                </div>
+                <!-- L1 -->
+                <div style="flex:1;text-align:center;position:relative;z-index:1;">
+                    <div style="width:10px;height:10px;background:var(--accent);border-radius:50%;margin:14px auto 8px;"></div>
+                    <div style="font-weight:700;font-size:0.65rem;">~2-3 мин</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);">L1: Периметр</div>
+                </div>
+                <!-- L2 -->
+                <div style="flex:1;text-align:center;position:relative;z-index:1;">
+                    <div style="width:10px;height:10px;background:var(--primary);border-radius:50%;margin:14px auto 8px;"></div>
+                    <div style="font-weight:700;font-size:0.65rem;">~5-8 мин</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);">L2: Верификация</div>
+                </div>
+                <!-- L3 -->
+                <div style="flex:1;text-align:center;position:relative;z-index:1;">
+                    <div style="width:10px;height:10px;background:var(--warning);border-radius:50%;margin:14px auto 8px;"></div>
+                    <div style="font-weight:700;font-size:0.65rem;">~8-12 мин</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);">L3: Эксплуатация</div>
+                </div>
+                <!-- COMPLY -->
+                <div style="flex:1;text-align:center;position:relative;z-index:1;">
+                    <div style="width:10px;height:10px;background:var(--primary);border-radius:50%;margin:14px auto 8px;"></div>
+                    <div style="font-weight:700;font-size:0.65rem;">~3-5 мин</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);">COMPLY: 152-ФЗ</div>
+                </div>
+                <!-- Отчёт -->
+                <div style="flex:1;text-align:center;position:relative;z-index:1;">
+                    <div style="width:10px;height:10px;background:var(--text-main);border-radius:50%;margin:14px auto 8px;"></div>
+                    <div style="font-weight:700;font-size:0.65rem;">~20 мин</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);">Отчёт готов</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-stats" style="display: flex; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px;">
+            <div class="stat-item" style="text-align: center;">
+                <div class="number" style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700;">81</div>
+                <div class="label" style="font-size: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">модуль</div>
+            </div>
+            <div class="stat-item" style="text-align: center;">
+                <div class="number" style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700;">20 мин</div>
+                <div class="label" style="font-size: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">максимум</div>
+            </div>
+            <div class="stat-item" style="text-align: center;">
+                <div class="number" style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700;">HTML</div>
+                <div class="label" style="font-size: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">отчёт</div>
+            </div>
+            <div class="stat-item" style="text-align: center;">
+                <div class="number" style="font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700;">152-ФЗ</div>
+                <div class="label" style="font-size: 0.5rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">комплаенс</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    HERO — ДЕТАЛЬНОЕ ЭКСПЕРТНОЕ ОПИСАНИЕ
+    ════════════════════════════════════════════════════════════ -->
+
+    <!-- ════════════════════════════════════════════════════════════
+    ПРОБЛЕМА
+    ════════════════════════════════════════════════════════════ -->
+    <section id="problem">
+        <div class="section-title">Ваш текущий аудит — это иллюзия безопасности</div>
+        <div class="section-sub">Большинство компаний тратят недели на сканирование и отчёты. И всё равно остаются под риском.</div>
+
+        <div class="pain-grid">
+            <div class="pain-item fade-up">
+                <div class="icon">🔍</div>
+                <h4>Тысячи ложных срабатываний</h4>
+                <p>Сканеры сигнатурного детектирования сравнивают баннеры с CVE и выдают тысячи «уязвимостей». Реальных — единицы. Ваша команда тратит недели на проверку того, чего нет.</p>
+                <span class="stat">до 85% ложных</span>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:4px;">→ 40 ч проверки · ~120 000 ₽ затрат</div>
+            </div>
+            <div class="pain-item fade-up">
+                <div class="icon">📄</div>
+                <h4>Отчёты, которые не помогают</h4>
+                <p>PDF на 200 страниц с перечислением CVE без ответа: «Что мне делать?» Вы получаете бумагу, а не инструмент.</p>
+                <span class="stat">до 200 страниц</span>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:4px;">→ разработчик не откроет. Решения нет.</div>
+            </div>
+            <div class="pain-item fade-up">
+                <div class="icon">💸</div>
+                <h4>Разрыв между ИБ и бизнесом</h4>
+                <p>Технические термины, непонятные CVE. Владелец бизнеса не понимает, почему должен тратить деньги на исправление. Ущерб не оцифрован.</p>
+                <span class="stat">ущерб не оцифрован</span>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:4px;">→ непонятно что чинить первым. Патчи копятся.</div>
+            </div>
+            <div class="pain-item fade-up">
+                <div class="icon">⏳</div>
+                <h4>Ручной труд и потеря времени</h4>
+                <p>Сканирование, верификация, отчёт, согласование, повторное сканирование. Один аудит может занимать месяц.</p>
+                <span class="stat">до 1 месяца</span>
+                <div style="font-size:0.58rem;color:var(--text-dim);margin-top:4px;">→ 30 дней риска. 60% взломов через известные дыры.</div>
+            </div>
+        </div>
+
+        <div class="expert-quote fade-up">
+            <div class="text">«Аудит безопасности не может стоить 200 000 ₽ и занимать месяц, если вы владеете интернет-магазином. Но и бесплатный сканер с 85% ложных срабатываний — не инструмент, а источник хаоса».</div>
+            <div class="author">— Евгений Свириденко, <span>Security Researcher</span></div>
+            <div style="font-size:0.62rem;color:var(--primary);margin-top:6px;font-weight:500;">PANTHEON CORE: 20 минут · &lt;5% ложных · ущерб в рублях · готовые патчи</div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    РЕШЕНИЕ
+    ════════════════════════════════════════════════════════════ -->
+    <section id="solution">
+        <div class="section-title">Как работает PANTHEON CORE</div>
+        <div class="section-sub">Не обещания. Факты. Не ручной труд — автоматизация. Не PDF — HTML с кодом и решениями.</div>
+
+        <div style="margin:20px auto;max-width:500px;">
+            <div style="background:var(--bg-card);border:1px solid var(--accent);border-radius:8px;padding:14px;text-align:center;margin-bottom:6px;opacity:0.9;">
+                <span style="color:var(--accent);font-weight:700;">L1 · Разведка</span>
+                <span style="float:right;color:var(--text-muted);font-size:0.7rem;">16 модулей</span>
+                <div style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;">~100% находок — всё что можно найти</div>
+            </div>
+            <div style="text-align:center;color:var(--accent);margin:2px 0;">▼</div>
+            <div style="background:var(--bg-card);border:1px solid var(--primary);border-radius:8px;padding:12px;text-align:center;margin-bottom:6px;max-width:70%;margin-left:auto;margin-right:auto;">
+                <span style="color:var(--primary);font-weight:700;">L2 · Верификация</span>
+                <span style="float:right;color:var(--text-muted);font-size:0.7rem;">40 модулей</span>
+                <div style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;">~30% подтверждено — ложные отсеяны</div>
+            </div>
+            <div style="text-align:center;color:var(--primary);margin:2px 0;">▼</div>
+            <div style="background:var(--bg-card);border:1px solid var(--warning);border-radius:8px;padding:10px;text-align:center;max-width:40%;margin-left:auto;margin-right:auto;">
+                <span style="color:var(--warning);font-weight:700;">L3 · Эксплуатация</span>
+                <span style="float:right;color:var(--text-muted);font-size:0.7rem;">12 модулей</span>
+                <div style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;">~5% — реальные угрозы с PoC</div>
+            </div>
+            <div style="text-align:center;color:var(--warning);margin:2px 0;">▼</div>
+            <div style="background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:8px;padding:10px;text-align:center;max-width:25%;margin-left:auto;margin-right:auto;">
+                <span style="color:var(--danger);font-weight:700;">💰 Отчёт</span>
+                <div style="font-size:0.65rem;color:var(--text-muted);margin-top:2px;">Ущерб в ₽ · ROI · Патчи</div>
+            </div>
+        </div>
+
+
+        <div class="solution-grid" style="position:relative;">
+            <div class="solution-step fade-up">
+                <span class="num">01</span>
+                <h4>Сканирование (L1)</h4>
+                <p>16 модулей за 2-3 минуты обнаруживают поверхность атаки: IP, порты, SSL, DNS, HTTP-заголовки, WAF.</p>
+                <span class="time">~2-3 мин</span>
+            </div>
+            <div class="solution-step fade-up">
+                <span class="num">02</span>
+                <h4>Верификация (L2)</h4>
+                <p>40 модулей проверяют каждую находку 3-5 запросами. Отсекаем ложные срабатывания до &lt;5%.</p>
+                <span class="time">~5-8 мин</span>
+            </div>
+            <div class="solution-step fade-up">
+                <span class="num">03</span>
+                <h4>Эксплуатация (L3)</h4>
+                <p>12 модулей безопасно имитируют атаки: SQLi, XSS, CSRF, IDOR, LFI, XXE. 100% подтверждение.</p>
+                <span class="time">~8-12 мин</span>
+            </div>
+            <div class="solution-step fade-up">
+                <span class="num">04</span>
+                <h4>Комплаенс (152-ФЗ)</h4>
+                <p>13 модулей проверяют соответствие закону о ПДн. Gap-анализ, калькулятор штрафов, 8 готовых документов.</p>
+                <span class="time">~3-5 мин</span>
+            </div>
+            <div class="solution-step fade-up">
+                <span class="num">05</span>
+                <h4>Экономика + Отчёт</h4>
+                <p>Перевод на язык денег: ущерб, стоимость исправления, ROI. HTML-отчёт с PoC, решениями, дорожной картой.</p>
+                <span class="time">~3-5 мин</span>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    МЕТОДОЛОГИЯ
+    ════════════════════════════════════════════════════════════ -->
+    <section id="methodology">
+        <div class="section-title">Методология</div>
+        <div class="section-sub">Четырёхуровневая система: от разведки до документов для РКН. Каждый уровень — автономный этап.</div>
+
+        <div style="margin:20px 0;overflow-x:auto;">
+            <div style="display:flex;align-items:center;gap:8px;min-width:700px;justify-content:center;padding:10px 0;">
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center;min-width:90px;">
+                    <div style="font-size:1.2rem;margin-bottom:4px;">🔍</div>
+                    <div style="font-weight:700;font-size:0.7rem;">Разведка</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);margin-top:2px;">Порты, DNS, WAF</div>
+                </div>
+                <div style="color:var(--accent);font-size:1rem;">→</div>
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center;min-width:90px;">
+                    <div style="font-size:1.2rem;margin-bottom:4px;">⚔️</div>
+                    <div style="font-weight:700;font-size:0.7rem;">Подготовка</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);margin-top:2px;">SQLi, XSS payload</div>
+                </div>
+                <div style="color:var(--warning);font-size:1rem;">→</div>
+                <div style="background:var(--bg-card);border:1px solid var(--warning);border-radius:8px;padding:12px 14px;text-align:center;min-width:90px;">
+                    <div style="font-size:1.2rem;margin-bottom:4px;">📨</div>
+                    <div style="font-weight:700;font-size:0.7rem;">Доставка</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);margin-top:2px;">Фишинг, ссылка</div>
+                </div>
+                <div style="color:var(--danger);font-size:1rem;">→</div>
+                <div style="background:rgba(239,68,68,0.1);border:1px solid var(--danger);border-radius:8px;padding:12px 14px;text-align:center;min-width:90px;">
+                    <div style="font-size:1.2rem;margin-bottom:4px;">💀</div>
+                    <div style="font-weight:700;font-size:0.7rem;">Эксплуатация</div>
+                    <div style="font-size:0.55rem;color:var(--text-muted);margin-top:2px;">Кража cookie</div>
+                </div>
+                <div style="color:var(--danger);font-size:1rem;">→</div>
+                <div style="background:rgba(239,68,68,0.15);border:1px solid var(--danger);border-radius:8px;padding:12px 14px;text-align:center;min-width:90px;">
+                    <div style="font-size:1.2rem;margin-bottom:4px;">💰</div>
+                    <div style="font-weight:700;font-size:0.7rem;">Ущерб</div>
+                    <div style="font-size:0.55rem;color:var(--danger);margin-top:2px;">~500 000 ₽</div>
+                </div>
+            </div>
+            <div style="text-align:center;font-size:0.6rem;color:var(--text-dim);margin-top:8px;">▲ Цепочка Kill Chain: каждая уязвимость — шаг к финансовым потерям</div>
+        </div>
+
+
+        <div class="card-grid">
+            <div class="card card-accent fade-up">
+                <h3>🔍 L1 — Сканирование</h3>
+                <p><strong>Что делает:</strong> Автоматический обход внешнего периметра. 16 модулей обнаруживают поверхность атаки.</p>
+                <p style="margin-top:4px;"><strong>Точность:</strong> ~70%. Мы находим всё, что можно найти, и говорим: «это требует проверки».</p>
+                <p style="margin-top:4px;"><strong>Пример:</strong> headers_ultra проверяет 6 заголовков за 2 секунды. dns_ultra проверяет SPF, DMARC, DKIM за 3 секунды.</p>
+                <span class="stat stat-accent">16 модулей</span>
+            </div>
+            <div class="card card-success fade-up">
+                <h3>✅ L2 — Верификация</h3>
+                <p><strong>Что делает:</strong> 40 модулей. Каждая находка проверяется 3-5 запросами. Отсекаем ложные срабатывания.</p>
+                <p style="margin-top:4px;"><strong>Точность:</strong> ~95%. <strong>Менее 5% FP</strong> — вы не тратите время на проверку того, чего нет.</p>
+                <p style="margin-top:4px;"><strong>Пример:</strong> csrf_ultra проверяет все POST-формы на наличие CSRF-токена.</p>
+                <span class="stat stat-success">40 модулей</span>
+            </div>
+            <div class="card card-warning fade-up">
+                <h3>⚡ L3 — Эксплуатация</h3>
+                <p><strong>Что делает:</strong> Безопасная имитация атак: SQLi, XSS, CSRF, IDOR, LFI, XXE.</p>
+                <p style="margin-top:4px;"><strong>Результат:</strong> 100% подтверждение. Вы получаете <strong>доказательства</strong> для руководства.</p>
+                <p style="margin-top:4px;"><strong>Пример:</strong> sql_blind выполняет 15+ payload'ов и анализирует ответ сервера.</p>
+                <span class="stat stat-warning">12 модулей</span>
+            </div>
+            <div class="card card-danger fade-up">
+                <h3>📋 COMPLY — 152-ФЗ</h3>
+                <p><strong>Что делает:</strong> Проверка соответствия закону о персональных данных. 13 модулей.</p>
+                <p style="margin-top:4px;"><strong>Результат:</strong> Gap-анализ, калькулятор штрафов, <strong>8 готовых документов</strong> для Роскомнадзора.</p>
+                <p style="margin-top:4px;"><strong>Пример:</strong> cookie_consent проверяет 58 форм на наличие согласий. data_minimization анализирует объём собираемых ПДн.</p>
+                <span class="stat stat-danger">13 модулей</span>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:10px;">
+            <div style="font-weight:600; color:var(--accent); margin-bottom:4px; font-size:0.8rem;">❓ Почему L2 важнее L1?</div>
+            <p style="font-size:0.73rem; color:var(--text-muted); line-height:1.8;">L1 находит всё, что можно найти. Но 30-40% находок могут быть ложными. L2 отправляет дополнительные запросы и проверяет каждую находку в контексте. Это снижает FP до <strong>5%</strong>.</p>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:14px;">
+            <div style="font-weight:600; color:var(--accent); margin-bottom:4px; font-size:0.8rem;">❓ Зачем нужна L3-эксплуатация?</div>
+            <p style="font-size:0.73rem; color:var(--text-muted); line-height:1.8;">L1 и L2 обнаруживают уязвимости. L3 подтверждает их. Мы имитируем действия хакера и показываем, что уязвимость реальна. Это даёт вам <strong>доказательства</strong> для руководства.</p>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; margin-bottom:14px;">
+            <div style="font-weight:600; color:var(--accent); margin-bottom:4px; font-size:0.8rem;">❓ А это точно про 152-ФЗ?</div>
+            <p style="font-size:0.73rem; color:var(--text-muted); line-height:1.8;">Да. COMPLY-модули проверяют: согласия на обработку ПДн, сроки хранения, трансграничную передачу, шифрование, уведомления об утечках. Вы получаете не просто отчёт, а <strong>готовый пакет документов</strong> для РКН.</p>
+        </div>
+
+        <div class="expert-quote" style="border-left-color: var(--primary);">
+            <div class="text">«Большинство сканеров умеют только <strong>обнаруживать</strong> проблемы. Они не <strong>подтверждают</strong> их и не дают <strong>решений</strong>. PANTHEON CORE — это инструмент, который проводит от находки до исправления: находит, проверяет, эксплуатирует, даёт код и считает деньги. Это <strong>эксперт в коробке</strong>».</div>
+            <div class="author">— Евгений Свириденко, <span>Security Researcher</span></div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    МОДУЛИ
+    ════════════════════════════════════════════════════════════ -->
+    <section id="modules">
+        <div class="section-title">81 сканирующий модуль</div>
+        <div class="section-sub">Каждый модуль — автономный детектор. Всё работает одновременно — вы получаете полную картину за 20 минут.</div>
+
+
+        <div class="module-grid">
+            <div class="module-group">
+                <h4 style="color:var(--accent);">🔍 L1 — Сигнатурный анализ</h4>
+                <div class="mod-count">16 модулей · ~70% точность</div>
+                <div>
+                    <span class="module-tag">cms_ultra</span>
+                    <span class="module-tag">cookies_ultra</span>
+                    <span class="module-tag">cors_ultra</span>
+                    <span class="module-tag">dns_ultra</span>
+                    <span class="module-tag">email_ultra</span>
+                    <span class="module-tag">headers_ultra</span>
+                    <span class="module-tag">hosting_ultra</span>
+                    <span class="module-tag">ports_ultra</span>
+                    <span class="module-tag">rate_ultra</span>
+                    <span class="module-tag">secrets_ultra</span>
+                    <span class="module-tag">ssl_ultra</span>
+                    <span class="module-tag">tech_ultra</span>
+                    <span class="module-tag">waf_ultra</span>
+                    <span class="module-tag">web_scraping</span>
+                    <span class="module-tag">whois_ultra</span>
+                </div>
+            </div>
+            <div class="module-group">
+                <h4 style="color:var(--primary);">✅ L2 — Активная валидация</h4>
+                <div class="mod-count">40 модулей · ~95% точность</div>
+                <div>
+                    <span class="module-tag">api_ultra</span>
+                    <span class="module-tag">backup_finder</span>
+                    <span class="module-tag">cloud_misconfig</span>
+                    <span class="module-tag">cookie_scanner</span>
+                    <span class="module-tag">cors_ultra</span>
+                    <span class="module-tag">csrf_ultra</span>
+                    <span class="module-tag">cve_exploit_mapper</span>
+                    <span class="module-tag">dalfox_ultra</span>
+                    <span class="module-tag">db_exposure</span>
+                    <span class="module-tag">dns_zone_transfer</span>
+                    <span class="module-tag">env_file_checker</span>
+                    <span class="module-tag">ffuf_ultra</span>
+                    <span class="module-tag">fuzz_ultra</span>
+                    <span class="module-tag">git_exposure</span>
+                    <span class="module-tag">graphql_ultra</span>
+                    <span class="module-tag">header_misconfig</span>
+                    <span class="module-tag">idor_ultra</span>
+                    <span class="module-tag">jwt_ultra</span>
+                    <span class="module-tag">katana_ultra</span>
+                    <span class="module-tag">leak_html_template</span>
+                    <span class="module-tag">leak_hunter</span>
+                    <span class="module-tag">leak_monitor</span>
+                    <span class="module-tag">lfi_ultra</span>
+                    <span class="module-tag">oauth_ultra</span>
+                    <span class="module-tag">phpinfo_detector</span>
+                    <span class="module-tag">race_condition</span>
+                    <span class="module-tag">rate_limiting_l2</span>
+                    <span class="module-tag">redirect_ultra</span>
+                    <span class="module-tag">secrets_ultra</span>
+                    <span class="module-tag">smtp_open_relay</span>
+                    <span class="module-tag">sqli_ultra</span>
+                    <span class="module-tag">ssl_config_checker</span>
+                    <span class="module-tag">ssrf_ultra</span>
+                    <span class="module-tag">subdomain_ultra</span>
+                    <span class="module-tag">subjack_ultra</span>
+                    <span class="module-tag">upload_ultra</span>
+                    <span class="module-tag">waf_config_checker</span>
+                    <span class="module-tag">xss_ultra</span>
+                </div>
+            </div>
+            <div class="module-group">
+                <h4 style="color:var(--warning);">💥 L3 — Эксплуатация</h4>
+                <div class="mod-count">12 модулей · 100% подтверждение</div>
+                <div>
+                    <span class="module-tag module-tag-highlight">cloud_posture</span>
+                    <span class="module-tag module-tag-highlight">data_exfiltrator</span>
+                    <span class="module-tag module-tag-highlight">ddos_stress_test</span>
+                    <span class="module-tag module-tag-highlight">nuclei_ultra</span>
+                    <span class="module-tag module-tag-highlight">rce_exploit</span>
+                    <span class="module-tag module-tag-highlight">social_osint</span>
+                    <span class="module-tag module-tag-highlight">sql_blind</span>
+                    <span class="module-tag module-tag-highlight">validator</span>
+                    <span class="module-tag module-tag-highlight">waf_bypass_ultra</span>
+                    <span class="module-tag module-tag-highlight">xss_stored</span>
+                    <span class="module-tag module-tag-highlight">xxe_injection</span>
+                </div>
+            </div>
+            <div class="module-group">
+                <h4 style="color:var(--danger);">⚖️ 152-ФЗ — Комплаенс</h4>
+                <div class="mod-count">13 модулей · Полный пакет документов</div>
+                <div>
+                    <span class="module-tag">access_control_audit</span>
+                    <span class="module-tag">breach_notification</span>
+                    <span class="module-tag">breach_response</span>
+                    <span class="module-tag">compliance_152fz</span>
+                    <span class="module-tag">consent_audit</span>
+                    <span class="module-tag">cookie_consent</span>
+                    <span class="module-tag">cross_border_transfer</span>
+                    <span class="module-tag">data_flow_mapper</span>
+                    <span class="module-tag">data_minimization</span>
+                    <span class="module-tag">encryption_checker</span>
+                    <span class="module-tag">gdpr_checker</span>
+                    <span class="module-tag">retention_checker</span>
+                    <span class="module-tag">third_party_audit</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="background:linear-gradient(135deg, rgba(0,212,255,0.06), rgba(0,230,118,0.03)); border:1px solid var(--border-accent); border-radius:var(--radius); padding:10px; text-align:center;">
+            <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--accent);">16 L1 + 40 L2 + 12 L3 + 13 COMPLY = <strong>81 модуль</strong> · Максимальное время: 20 минут</span>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    АРТЕФАКТЫ
+    ════════════════════════════════════════════════════════════ -->
+    <section id="artifacts">
+        <div class="section-title">Что в отчёте</div>
+        <div class="section-sub">Каждый отчёт — не просто список уязвимостей. Это полноценный документ для руководства, разработчиков и аудиторов.</div>
+
+        <div class="artifact-grid">
+            <div class="artifact-item">
+                <div class="icon">📋</div>
+                <div class="title">Исполнительное резюме</div>
+                <div class="desc">Краткая выжимка: уровень безопасности, ключевые риски, план действий P0/P1/P2. Всё на одной странице.</div>
+                <span class="tag">Все тарифы</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">📊</div>
+                <div class="title">Уровень безопасности и Grade</div>
+                <div class="desc">Оценка от 0 до 100 (A–F). Gauge-график показывает ваш уровень относительно идеала.</div>
+                <span class="tag">Все тарифы</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">🌐</div>
+                <div class="title">Инфраструктурная карта</div>
+                <div class="desc">Технический стек: IP, порты, SSL, DNS, HTTP-заголовки, WAF. От 6 до 22 параметров.</div>
+                <span class="tag">Все тарифы</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">🔍</div>
+                <div class="title">Уязвимости с PoC</div>
+                <div class="desc">Каждая находка с PoC-кодом (curl), CVSS, CWE, бизнес-риском и финансовым импактом.</div>
+                <span class="tag">VERIFY+</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">💰</div>
+                <div class="title">Финансовый ущерб и ROI</div>
+                <div class="desc">Ущерб по каждой уязвимости (в рублях), стоимость устранения, ROI. Прозрачная методика.</div>
+                <span class="tag">VERIFY+</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">🗺</div>
+                <div class="title">Дорожная карта</div>
+                <div class="desc">P0 (24ч), P1 (7д), P2 (30д). Конкретные шаги с оценкой времени и стоимости.</div>
+                <span class="tag">VERIFY+</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">✅</div>
+                <div class="title">Статус валидации</div>
+                <div class="desc">L1/L2/L3 — показываем, какие находки подтверждены, какие ложные.</div>
+                <span class="tag">VERIFY+</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">⚖️</div>
+                <div class="title">152-ФЗ — Комплаенс</div>
+                <div class="desc">Gap-анализ, калькулятор штрафов, чек-лист, 8 готовых документов для РКН.</div>
+                <span class="tag">COMPLY+</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">☠️</div>
+                <div class="title">Kill Chain и MITRE ATT&CK</div>
+                <div class="desc">Разбор цепочки атаки и матрица MITRE ATT&CK с тактиками и техниками.</div>
+                <span class="tag">DEEP</span>
+            </div>
+            <div class="artifact-item">
+                <div class="icon">📈</div>
+                <div class="title">Сравнение с отраслью</div>
+                <div class="desc">Ваш уровень относительно среднего МСБ и топ-100 компаний.</div>
+                <span class="tag">Все тарифы</span>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:8px 12px; margin-top:4px; text-align:center;">
+            <div style="font-size:0.65rem; color:var(--text-muted);">📄 HTML-отчёт — открывается в браузере, готов к отправке разработчику или руководству.</div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    ЭКОНОМИКА
+    ════════════════════════════════════════════════════════════ -->
+    <section id="economy">
+        <div class="section-title">Перевод на язык денег</div>
+        <div class="section-sub">Каждая уязвимость переведена в рубли. Вы видите не просто критичность, а реальный ущерб и стоимость устранения.</div>
+
+        <div class="eco-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Уязвимость</th>
+                        <th style="text-align:right;">Ущерб</th>
+                        <th style="text-align:right;">Исправление</th>
+                        <th style="text-align:right;">ROI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Cookie Security Issues</td>
+                        <td class="danger" style="text-align:right;">500 000 ₽</td>
+                        <td class="success" style="text-align:right;">3 000 ₽</td>
+                        <td class="roi" style="text-align:right;">166x</td>
+                    </tr>
+                    <tr>
+                        <td>DMARC Missing</td>
+                        <td class="danger" style="text-align:right;">50 000 ₽</td>
+                        <td class="success" style="text-align:right;">2 500 ₽</td>
+                        <td class="roi" style="text-align:right;">20x</td>
+                    </tr>
+                    <tr>
+                        <td>SQL Injection</td>
+                        <td class="danger" style="text-align:right;">1 500 000 ₽</td>
+                        <td class="success" style="text-align:right;">45 000 ₽</td>
+                        <td class="roi" style="text-align:right;">33x</td>
+                    </tr>
+                    <tr>
+                        <td>SSRF (Server-Side Request Forgery)</td>
+                        <td class="danger" style="text-align:right;">500 000 ₽</td>
+                        <td class="success" style="text-align:right;">10 000 ₽</td>
+                        <td class="roi" style="text-align:right;">50x</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; border-left:3px solid var(--primary); margin-bottom:14px;">
+            <div style="font-weight:600; margin-bottom:3px; font-size:0.75rem;">📎 Методика расчёта ущерба</div>
+            <p style="font-size:0.7rem; color:var(--text-muted); line-height:1.7;">Стоимость компрометации записи ПДн × количество записей + административный штраф (ст. 13.11 КоАП) + простой бизнеса + репутационные потери. Все расчёты автоматические и прозрачные.</p>
+        </div>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <span class="terminal-dot red"></span>
+                <span class="terminal-dot yellow"></span>
+                <span class="terminal-dot green"></span>
+                <span class="terminal-title">aegis_core — расчёт ущерба</span>
+            </div>
+            <div class="terminal-body">
+<span class="prompt">aegis@core</span>:<span class="output">~</span>$ ./aegis_core.py analyze example.com --tariff verify
+
+<span class="l1">[L1]</span> headers_ultra    ✅ 6 заголовков проверено
+<span class="l1">[L1]</span> ssl_scan         ✅ TLS 1.2+, сертификат валиден
+<span class="l1">[L1]</span> dns_ultra        ⚠️ SPF: не настроен, DMARC: отсутствует
+
+<span class="l2">[L2]</span> csrf_ultra       ❌ 6 форм без токена (подтверждено)
+<span class="l2">[L2]</span> sqli_ultra       ✅ 15 payload'ов, уязвимостей нет
+<span class="l2">[L2]</span> ssrf_ultra       ❌ Уязвимость подтверждена: /api/fetch?url=
+
+<span class="l3">[L3]</span> sql_blind        ⚠️ 2 Blind SQLi подтверждены
+
+<span class="cash">[CASH]</span> Ущерб: 950 000 ₽ | Исправление: 48 500 ₽ | ROI: 19.6x
+<span class="highlight-success">✅ Отчёт сгенерирован: report_verify.html</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    ДЕМОНСТРАЦИЯ ОТЧЁТОВ
+    ════════════════════════════════════════════════════════════ -->
+    <section id="demo">
+        <div class="section-title">Демонстрация отчётов</div>
+        <div class="section-sub">Примеры реальных отчётов, которые генерирует PANTHEON CORE. Данные обезличены, структура и формат сохранены.</div>
+
+        <div class="report-demo">
+            <div class="report-card">
+                <div class="report-icon">📄</div>
+                <div class="report-name">VERIFY — пример отчёта</div>
+                <div class="report-desc">Полный аудит с верификацией. Все уязвимости с PoC, решениями, ущербом и дорожной картой.</div>
+                <div class="report-stats">
+                    <span>🔍 12 уязвимостей</span>
+                    <span>💰 2 180 000 ₽</span>
+                    <span>📊 ROI 34.3x</span>
+                </div>
+                <a href="demo-verify.html" class="report-link" target="_blank">→ Посмотреть демо-отчёт VERIFY</a>
+            </div>
+            <div class="report-card">
+                <div class="report-icon">⚖️</div>
+                <div class="report-name">COMPLY — пример отчёта</div>
+                <div class="report-desc">Аудит с комплаенс-анализом. Gap-анализ 152-ФЗ, калькулятор штрафов, 8 готовых документов для РКН.</div>
+                <div class="report-stats">
+                    <span>📋 13 модулей 152-ФЗ</span>
+                    <span>📄 8 документов</span>
+                    <span>🛡 Защита от штрафов</span>
+                </div>
+                <a href="demo-comply.html" class="report-link" target="_blank">→ Посмотреть демо-отчёт COMPLY</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ════════════════════════════════════════════════════════════
+    ТАРИФЫ
+    ════════════════════════════════════════════════════════════ -->
+    <!-- ════════════════════════════════════════════════════════════
+    ОТВЕТЫ НА ВОПРОСЫ (FAQ)
+    ════════════════════════════════════════════════════════════ -->
+    <section id="faq" style="margin:24px 0 12px;">
+        <div class="section-title">Ответы на вопросы</div>
+        <div class="section-sub">Коротко о том, что обычно спрашивают перед запуском аудита.</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:12px 0 18px;">
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+                <div style="font-weight:600; color:var(--accent); font-size:0.78rem;">❓ Это безопасно?</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.6; margin-top:3px;">Да. Все проверки выполняются в режиме <strong>Safe PoC</strong> — без модификации данных, без DoS-тестов. Мы не наносим вреда вашему сайту.</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+                <div style="font-weight:600; color:var(--accent); font-size:0.78rem;">❓ Что я получу на выходе?</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.6; margin-top:3px;"><strong>HTML-отчёт</strong>, который можно открыть в браузере. В нём: Executive Summary, инфраструктура, уязвимости с PoC, решения, дорожная карта, ущерб и ROI.</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+                <div style="font-weight:600; color:var(--accent); font-size:0.78rem;">❓ Нужно ли устанавливать ПО?</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.6; margin-top:3px;">Нет. PANTHEON CORE работает как сервис — вы вводите домен, получаете отчёт. Всё в браузере.</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+                <div style="font-weight:600; color:var(--accent); font-size:0.78rem;">❓ Какие сайты можно проверить?</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.6; margin-top:3px;">Любые веб-приложения, доступные из интернета: интернет-магазины, порталы, CRM, API, лендинги.</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+                <div style="font-weight:600; color:var(--accent); font-size:0.78rem;">❓ Что такое 152-ФЗ и зачем это?</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.6; margin-top:3px;">152-ФЗ — закон о персональных данных. COMPLY-тариф даёт 13 модулей, Gap-анализ, калькулятор штрафов и 8 готовых документов.</div>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px;">
+                <div style="font-weight:600; color:var(--accent); font-size:0.78rem;">❓ Сколько времени занимает аудит?</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); line-height:1.6; margin-top:3px;"><strong>START — 2 минуты</strong>, VERIFY — 6 минут, COMPLY — 10 минут, DEEP — 20 минут.</div>
+            </div>
+        </div>
+    </section>
+    <section id="tariffs">
+        <div class="section-title">Тарифы</div>
+        <div class="section-sub">Выберите уровень детализации. Каждый тариф — полностью автоматический.</div>
+
+        <div class="tariff-grid">
+            <div class="tariff-card">
+                <div class="name">START</div>
+                <div class="price">0 ₽</div>
+                <div class="period">бесплатно</div>
+                <ul>
+                    <li><strong>L1</strong> — Сканирование (16 модулей)</li>
+                    <li>1 уязвимость с PoC</li>
+                    <li>Тизеры скрытых рисков</li>
+                    <li>Инфраструктура (6 параметров)</li>
+                    <li>Сравнение с отраслью</li>
+                    <li>HTML-отчёт</li>
+                    <li class="muted">2-3 минуты</li>
+                </ul>
+            </div>
+            <div class="tariff-card popular">
+                <div class="name" style="color:var(--accent);">VERIFY</div>
+                <div class="price">4 900 ₽</div>
+                <div class="period">разовый аудит</div>
+                <ul>
+                    <li><strong>L1+L2</strong> — Сканирование + Верификация (56 модулей)</li>
+                    <li>Все уязвимости с PoC</li>
+                    <li>Решения для разработчика</li>
+                    <li>Разбивка ущерба по каждой</li>
+                    <li>Дорожная карта P0/P1/P2</li>
+                    <li>Статус валидации (L1/L2)</li>
+                    <li>Сравнение с отраслью</li>
+                    <li>Инфраструктура (11 параметров)</li>
+                    <li class="muted">5-8 минут</li>
+                </ul>
+            </div>
+            <div class="tariff-card">
+                <div class="name">COMPLY</div>
+                <div class="price">9 900 ₽</div>
+                <div class="period">под ключ</div>
+                <ul>
+                    <li><strong>L1+L2+COMPLY</strong> — 69 модулей</li>
+                    <li>Всё из VERIFY</li>
+                    <li>13 модулей 152-ФЗ</li>
+                    <li>Gap-анализ соответствия</li>
+                    <li>Калькулятор штрафов (ст. 13.11 КоАП)</li>
+                    <li>8 документов для РКН</li>
+                    <li>Чек-лист устранения</li>
+                    <li>Защита от штрафов до 500 000 ₽</li>
+                    <li>HTML + .docx</li>
+                    <li class="muted">8-12 минут</li>
+                </ul>
+            </div>
+            <div class="tariff-card">
+                <div class="name">DEEP</div>
+                <div class="price">19 900 ₽</div>
+                <div class="period">полный пентест</div>
+                <ul>
+                    <li><strong>L1+L2+L3</strong> — 68 модулей (без COMPLY)</li>
+                    <li>Всё из VERIFY</li>
+                    <li>L3-эксплуатация (12 модулей)</li>
+                    <li>Kill Chain анализ</li>
+                    <li>MITRE ATT&CK матрица</li>
+                    <li>68 модулей (L1+L2+L3, без COMPLY)</li>
+                    <li>Инфраструктура (22 параметра)</li>
+                    <li>Краткий анализ рисков 152-ФЗ (без документов)</li>
+                    <li class="muted">20 минут</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); padding:10px; text-align:center; font-size:0.7rem; color:var(--text-muted); margin: 12px 0;">
+            💡 Для заказа тарифов и консультации — <a href="https://t.me/auditaegiscore" style="color:var(--accent);">Telegram</a>
+        </div>
+    </section>
+
+</div>
+<!-- закрытие контейнера -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+ФУТЕР — ВО ВСЮ ШИРИНУ
+═══════════════════════════════════════════════════════════════ -->
+<div class="footer-full">
+    <div class="footer-inner">
+        <div class="footer-expert">
+            <div class="greeting">
+                <div class="avatar">ЕС</div>
+                <div>
+                    <div class="name">Евгений Свириденко</div>
+                    <div class="role">Security Researcher · Автор PANTHEON CORE</div>
+                </div>
+            </div>
+            <div class="message">
+                Я разрабатываю PANTHEON CORE как инструмент для автоматического аудита. Моя цель — чтобы каждый владелец веб-приложения мог за 20 минут получить экспертный отчёт с PoC, решениями и экономикой. Без ручного труда, без PDF, только факты.
+                <br><br>
+                Если у вас есть вопросы по отчёту или нужна консультация по внедрению решений — пишите в Telegram. Отвечаю в течение часа.
+            </div>
+            <div class="contacts">
+                <a href="https://t.me/auditaegiscore" class="btn primary" target="_blank">Telegram</a>
+                <a href="https://vk.com/auditaegiscore" class="btn" target="_blank">VK</a>
+            </div>
+        </div>
+
+        <div class="footer-legal">
+            <div class="item"><strong>Методология:</strong> OWASP Top 10 (2021) · PT AFK v3 · 152-ФЗ · MITRE ATT&CK · CVSS v3.1 · ГОСТ Р 57580.1</div>
+            <div class="item"><strong>Правовая информация:</strong> ✓ Все проверки в режиме Safe PoC · ✓ Без модификации данных</div>
+        </div>
+
+        <div class="footer-end">
+            <div class="copy">© 2026 · Евгений Свириденко · PANTHEON CORE · Анализ, который видит угрозу до удара</div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href === '#') return;
+        const target = document.querySelector(href);
+        if (target) {
+            e.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+console.log('🛡️ PANTHEON CORE — финальная версия');
+console.log('📦 81 модуль: 16 L1 · 40 L2 · 12 L3 · 13 COMPLY');
+console.log('🔗 Telegram: https://t.me/auditaegiscore');
+</script>
+
+
+<script>
+// Интерактивная сетка — ПК: курсор, мобила: касание
+(function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .grid-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(circle 120px at 50% 50%, rgba(0,212,255,0.04) 0%, transparent 70%);
+            transition: opacity 0.5s ease-out;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    const glow = document.createElement('div');
+    glow.className = 'grid-glow';
+    document.body.appendChild(glow);
+    
+    const isMobile = 'ontouchstart' in window;
+    
+    function moveGlow(x, y) {
+        glow.style.opacity = '1';
+        glow.style.background = `radial-gradient(circle 120px at ${x}px ${y}px, rgba(0,212,255,0.06) 0%, transparent 70%)`;
+    }
+    
+    function fadeGlow() {
+        glow.style.opacity = '0';
+    }
+    
+    if (isMobile) {
+        document.addEventListener('touchstart', (e) => moveGlow(e.touches[0].clientX, e.touches[0].clientY));
+        document.addEventListener('touchmove', (e) => moveGlow(e.touches[0].clientX, e.touches[0].clientY));
+        document.addEventListener('touchend', fadeGlow);
+    } else {
+        document.addEventListener('mousemove', (e) => moveGlow(e.clientX, e.clientY));
+        document.addEventListener('mouseleave', fadeGlow);
+    }
+})();
+</script>
+
+</body>
+</html>
