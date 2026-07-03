@@ -85,13 +85,13 @@
         .hero-list li::before { content: '›'; color: var(--accent); position: absolute; left: 0; font-weight: bold; }
         
         /* Terminal */
-        .terminal { background: #0D1117; border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .terminal { background: #000000; border: 1px solid var(--border-light); border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         .term-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #181C24; border-bottom: 1px solid var(--border-light); }
         .term-dots { display: flex; gap: 6px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; }
         .term-title { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-left: 8px; }
-        .term-body { padding: 20px; font-family: var(--font-mono); font-size: 12px; line-height: 1.8; color: var(--text-secondary); min-height: 320px; white-space: pre-wrap; }
-        .t-green { color: #00E676; } .t-blue { color: #00D4FF; } .t-purple { color: #C792EA; } .t-red { color: #EF4444; } .t-yellow { color: #F59E0B; } .t-muted { color: #6B7280; }
+        .term-body { padding: 16px; font-family: var(--font-mono); font-size: 11px; line-height: 1.8; color: var(--text-secondary); min-height: 320px; white-space: pre; overflow-x: auto; }
+        .t-green { color: #00E676; } .t-blue { color: #00D4FF; } .t-purple { color: #C792EA; } .t-red { color: #EF4444; } .t-yellow { color: #F59E0B; } .t-muted { color: #9CA3AF; } .t-white { color: #FFFFFF; }
         .cursor { display: inline-block; width: 8px; height: 14px; background: #00D4FF; animation: blink 1s steps(2) infinite; vertical-align: text-bottom; }
         @keyframes blink { 0% { opacity: 0; } 50% { opacity: 1; } }
 
@@ -252,6 +252,8 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
         @media (max-width: 768px) {
+            .term-body { font-size: 10px; padding: 12px; min-height: auto; }
+            .terminal { max-height: 280px; }
             .hero-grid, .anatomy-grid, .report-grid, .arch-code, .process-grid, .pricing-grid, .footer-grid, .comp-grid, .expert-grid, .modules-grid { grid-template-columns: 1fr; }
             .battle-grid { grid-template-columns: 1fr 1fr; }
             .arch-layers { flex-direction: column; gap: 32px; }
@@ -924,14 +926,14 @@
             { t: 'span', c: 't-blue', text: 'root@pantheon ' },
             { t: 'span', c: 't-yellow', text: '~ ' },
             { t: 'span', c: 't-red', text: '✗ ' },
-            { t: 'span', c: 't-muted', text: 'pantheon scan example.com --tier guard\n' },
-            { t: 'span', c: 't-muted', text: '[*] L1: POSEIDON searching Origin IP...\n' },
-            { t: 'span', c: 't-muted', text: '[+] Origin found: 185.15.20.30 (crt.sh leak)\n' },
-            { t: 'span', c: 't-muted', text: '[+] HEPHAESTUS: 1C-Bitrix, Nginx, PHP 8.1\n' },
-            { t: 'span', c: 't-muted', text: '[+] JANUS: Port 3306 open. Ctx updated.\n' },
-            { t: 'span', c: 't-muted', text: '[*] L2: MEDUSA testing SQLi (God Mode)...\n' },
+            { t: 'span', c: 't-white', text: 'pantheon scan example.com --tier guard\n' },
+            { t: 'span', c: 't-blue', text: '[*] L1: POSEIDON searching Origin IP...\n' },
+            { t: 'span', c: 't-green', text: '[+] Origin found: 185.15.20.30 (crt.sh leak)\n' },
+            { t: 'span', c: 't-green', text: '[+] HEPHAESTUS: 1C-Bitrix, Nginx, PHP 8.1\n' },
+            { t: 'span', c: 't-green', text: '[+] JANUS: Port 3306 open. Ctx updated.\n' },
+            { t: 'span', c: 't-blue', text: '[*] L2: MEDUSA testing SQLi (God Mode)...\n' },
             { t: 'span', c: 't-red', text: '[!] CRITICAL: SQLi confirmed (CWE-89)\n' },
-            { t: 'span', c: 't-muted', text: '[+] NEMESIS: Building Kill Chain...\n' },
+            { t: 'span', c: 't-green', text: '[+] NEMESIS: Building Kill Chain...\n' },
             { t: 'span', c: 't-yellow', text: '➜ Generating TLP:AMBER report...' },
             { t: 'span', c: 'cursor', text: ' ' }
         ];
