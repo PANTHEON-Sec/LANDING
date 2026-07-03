@@ -1,0 +1,10 @@
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write('<!DOCTYPE html>\n')
+    f.write('<html lang="ru">\n')
+    f.write('<head>\n')
+    f.write('<meta charset="UTF-8">\n')
+    f.write('<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">\n')
+    f.write('<title>PANTHEON_ | Архитектор автоматизированного аудита безопасности</title>\n')
+    f.write('<link rel="preconnect" href="https://fonts.googleapis.com">\n')
+    f.write('<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">\n')
+print('Part 1 OK')

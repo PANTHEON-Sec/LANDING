@@ -1,0 +1,8 @@
+<svg width="260" height="50" viewBox="0 0 260 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M4 8 L4 36 M4 8 L26 8" stroke="#00D4FF" stroke-width="6" stroke-linecap="round"/>
+  <line x1="4" y1="17" x2="21" y2="17" stroke="#00D4FF" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+  <line x1="4" y1="26" x2="17" y2="26" stroke="#00D4FF" stroke-width="6" stroke-linecap="round" opacity="0.3"/>
+  <circle cx="26" cy="8" r="4" fill="#00E676"/>
+  <text x="36" y="23" font-family="'JetBrains Mono', monospace" font-size="22" font-weight="700" fill="#00D4FF" letter-spacing="-0.5">PANTHEON_</text>
+  <text x="36" y="38" font-family="'Inter', sans-serif" font-size="13" font-weight="500" fill="#6B7280" letter-spacing="0.5">Automated Security Audit Engine</text>
+</svg>
