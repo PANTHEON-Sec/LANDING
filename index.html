@@ -925,52 +925,9 @@
         <div class="modal-content">
             <div class="modal-close" onclick="document.getElementById('report-modal').style.display='none'">&times;</div>
             
-            <div style="padding: 32px; border-bottom: 1px solid var(--border);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                    <div>
-                        <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);">Отчет аудита безопасности</div>
-                        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-top: 4px;">example.com · GUARD · TLP:AMBER</div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 56px; height: 56px; border-radius: 50%; border: 5px solid var(--high); position: relative;"><div style="position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; border: 5px solid var(--bg-deep); clip-path: polygon(50% 0%, 100% 0%, 100% 30%, 50% 30%);"></div></div>
-                        <div style="font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--high);">8.6</div>
-                    </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
-                    <div style="background: var(--bg-surface); padding: 12px; border-radius: 6px; text-align: center;">
-                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--critical);">2</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">CRITICAL</div>
-                    </div>
-                    <div style="background: var(--bg-surface); padding: 12px; border-radius: 6px; text-align: center;">
-                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--high);">4</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">HIGH</div>
-                    </div>
-                    <div style="background: var(--bg-surface); padding: 12px; border-radius: 6px; text-align: center;">
-                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--medium);">3</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">MEDIUM</div>
-                    </div>
-                    <div style="background: var(--bg-surface); padding: 12px; border-radius: 6px; text-align: center;">
-                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--low);">5</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">LOW</div>
-                    </div>
-                </div>
-                
-                <div style="background: var(--bg-surface); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
-                    <div style="font-size: 14px; font-weight: 700; color: var(--critical); margin-bottom: 8px;">[CRITICAL] SQL Injection в /api/search</div>
-                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">CWE-89 · CVSS 9.8 · Ущерб: 1.8M ₽ · Штраф РКН: 500K ₽</div>
-                    
-                    <div style="background: #0D1117; border-radius: 4px; padding: 12px; font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: var(--text-muted); border: 1px solid var(--border);">
-                        <span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">pantheon</span> <span style="color: #F59E0B;">curl</span> 'https://example.com/api/search?q=test%27%20UNION...'<br>
-                        <span style="color: #EF4444;">[!] Response: 200 OK (Data extracted)</span>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; padding: 16px; background: rgba(0, 212, 255, 0.05); border-radius: 8px; border: 1px solid var(--accent);">
-                    <div style="font-size: 13px; color: var(--text-muted);">Это демонстрационный отчёт тарифа GUARD (4 900 ₽) — 47 находок с PoC и финансовым расчётом. Тарифы LAW (9 900 ₽) и SENTINEL (19 900 ₽) добавляют compliance 152-ФЗ и эксплуатацию L3 с Kill Chain.</div>
-                </div>
-            </div>
+            <iframe src="DemoLandingJob.html" style="width: 100%; height: 80vh; border: none; border-radius: 0 0 12px 12px;"></iframe>
         </div>
+            </div>
     </div>
 
     <script>
