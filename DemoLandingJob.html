@@ -1,0 +1,2905 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PANTHEON · Аудит безопасности · example.com</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.6/index.css">
+    <style>
+        :root {
+            --bg-primary: #0A0C10;
+            --bg-card: #11141A;
+            --bg-elevated: #1A1D24;
+            --bg-surface: #141820;
+            --text-primary: #EAECEF;
+            --text-secondary: #8B949E;
+            --text-muted: #5D646E;
+            --accent: #00D4FF;
+            --accent-muted: rgba(0, 212, 255, 0.08);
+            --accent-glow: rgba(0, 212, 255, 0.15);
+            --critical: #EF4444;
+            --high: #F59E0B;
+            --medium: #10B981;
+            --low: #3B82F6;
+            --info: #6B7280;
+            --border: #1F242C;
+            --border-light: #2A303A;
+            --border-accent: rgba(0, 212, 255, 0.2);
+            --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            --radius-sm: 3px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2220%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.4%22 opacity=%220.06%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2240%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.35%22 opacity=%220.055%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2285%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.045%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%22115%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2230%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2295%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2225%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2255%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2290%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+        }
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 13px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .report-header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: var(--space-2xl) var(--space-2xl) var(--space-xl);
+            position: relative;
+            z-index: 1;
+        }
+
+        .report-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+            opacity: 0.6;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap;
+            gap: var(--space-md);
+        }
+
+        .header-brand { display: flex; flex-direction: column; gap: 2px; }
+
+        .header-meta-group { display: flex; gap: var(--space-sm); align-items: center; flex-wrap: wrap; }
+
+        .tlp-badge {
+            padding: 3px 8px;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        .tier-badge {
+            padding: 3px 10px;
+            background: var(--accent-muted);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+        }
+
+        .header-title { margin-bottom: var(--space-xl); }
+
+        .report-title {
+            font-family: var(--font-body);
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            letter-spacing: -0.01em;
+        }
+
+        .report-target {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .header-meta {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: var(--space-md);
+            background: var(--bg-card);
+        }
+
+        .meta-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+
+        .meta-value {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .meta-value.accent { color: var(--accent); }
+
+        .status-bar {
+            justify-content: center;
+            display: flex;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-2xl);
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            z-index: 1;
+            position: relative;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        .status-critical .status-dot { background: var(--critical); box-shadow: 0 0 6px var(--critical); }
+        .status-high .status-dot { background: var(--high); box-shadow: 0 0 6px var(--high); }
+        .status-medium .status-dot { background: var(--medium); box-shadow: 0 0 6px var(--medium); }
+        .status-low .status-dot { background: var(--low); box-shadow: 0 0 6px var(--low); }
+        .status-info .status-dot { background: var(--info); }
+
+        .status-value { font-family: var(--font-mono); font-weight: 600; }
+
+        .status-critical .status-value { color: var(--critical); }
+        .status-high .status-value { color: var(--text-muted); }
+        .status-medium .status-value { color: var(--medium); }
+        .status-low .status-value { color: var(--low); }
+        .status-info .status-value { color: var(--info); }
+
+        .status-label { color: var(--text-secondary); font-size: 10px; }
+
+        .status-separator {
+            width: 1px;
+            height: 20px;
+            background: var(--border-light);
+            margin: 0 var(--space-xs);
+            flex-shrink: 0;
+        }
+
+        main {
+            flex: 1;
+            padding: var(--space-xl) var(--space-2xl);
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xl);
+        }
+
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .section-title .idx {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .section-badge {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .section-body { padding: var(--space-lg); }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2220%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.4%22 opacity=%220.06%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2240%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.35%22 opacity=%220.055%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2285%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.045%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%22115%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2230%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2295%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2225%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2255%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2290%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        .exec-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: var(--space-lg);
+        }
+
+        .risk-score {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            position: relative;
+        }
+
+        .risk-score::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(245, 158, 11, 0.08), transparent 70%);
+            pointer-events: none;
+        }
+
+        .score-ring {
+            width: 140px;
+            height: 140px;
+            position: relative;
+        }
+
+        .score-ring svg { transform: rotate(-90deg); }
+
+        .score-ring .track { fill: none; stroke: var(--border-light); stroke-width: 8; }
+        .score-ring .fill {
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 377;
+             
+            transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .score-value {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-number {
+            font-family: var(--font-mono);
+            font-size: 36px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .score-max {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .score-label {
+            margin-top: var(--space-md);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .score-sublabel {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .exec-summary-text {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .exec-summary-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .exec-summary-text strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .key-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-sm);
+            margin-top: var(--space-sm);
+        }
+
+        .key-stat {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .key-stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+
+        .key-stat-value {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .distribution {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .dist-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 40px;
+            align-items: center;
+            gap: var(--space-md);
+            font-size: 11px;
+        }
+
+        .dist-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 10px;
+        }
+
+        .dist-label .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        .dist-critical .dist-label { color: var(--critical); }
+        .dist-critical .dot { background: var(--critical); }
+        .dist-high .dist-label { color: var(--text-muted); }
+        .dist-high .dot { background: var(--high); }
+        .dist-medium .dist-label { color: var(--medium); }
+        .dist-medium .dot { background: var(--medium); }
+        .dist-low .dist-label { color: var(--low); }
+        .dist-low .dot { background: var(--low); }
+        .dist-info .dist-label { color: var(--info); }
+        .dist-info .dot { background: var(--info); }
+
+        .dist-bar {
+            height: 6px;
+            background: var(--bg-surface);
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .dist-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dist-critical .dist-bar-fill { background: var(--critical); box-shadow: 0 0 8px var(--critical); }
+        .dist-high .dist-bar-fill { background: var(--high); box-shadow: 0 0 8px var(--high); }
+        .dist-medium .dist-bar-fill { background: var(--medium); box-shadow: 0 0 8px var(--medium); }
+        .dist-low .dist-bar-fill { background: var(--low); box-shadow: 0 0 8px var(--low); }
+        .dist-info .dist-bar-fill { background: var(--info); }
+
+        .dist-count {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .category-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
+            cursor: pointer;
+            user-select: none;
+            transition: background var(--transition);
+        }
+
+        .category-header:hover { background: var(--bg-elevated); }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .severity-indicator {
+            width: 3px;
+            height: 28px;
+            border-radius: 2px;
+        }
+
+        .sev-high .severity-indicator { background: var(--high); box-shadow: 0 0 8px var(--high); }
+        .sev-medium .severity-indicator { background: var(--medium); box-shadow: 0 0 8px var(--medium); }
+        .sev-low .severity-indicator { background: var(--low); box-shadow: 0 0 8px var(--low); }
+        .sev-info .severity-indicator { background: var(--info); }
+
+        .category-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .category-count {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .category-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .severity-tag {
+            padding: 3px 10px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+
+        .tag-high { background: rgba(245, 158, 11, 0.08); color: var(--text-muted); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .tag-medium { background: rgba(16, 185, 129, 0.08); color: var(--medium); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .tag-low { background: rgba(59, 130, 246, 0.08); color: var(--low); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .tag-info { background: rgba(107, 114, 128, 0.08); color: var(--info); border: 1px solid rgba(107, 114, 128, 0.2); }
+
+        .chevron {
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            transition: transform var(--transition);
+        }
+
+        .category-block.open .chevron { transform: rotate(180deg); }
+
+        .category-body {
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2220%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.4%22 opacity=%220.06%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2240%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.35%22 opacity=%220.055%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2285%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.045%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%22115%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2230%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2295%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2225%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2255%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2290%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+        }
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .category-block.open .category-body { max-height: none; overflow: visible; }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2220%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.4%22 opacity=%220.06%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2240%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.35%22 opacity=%220.055%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2285%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.045%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%22115%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2230%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2295%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2225%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2255%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2290%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        .category-content { padding: var(--space-lg); display: flex; flex-direction: column; gap: var(--space-md); }
+
+        .finding {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-left: 2px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: var(--space-md) var(--space-lg);
+            overflow: hidden;
+            min-width: 0;
+            transition: border-color var(--transition), background var(--transition);
+        }
+
+        .finding:hover {
+            border-color: var(--border-light);
+            background: var(--bg-elevated);
+        }
+
+        .finding.sev-high { border-left-color: var(--text-muted); }
+        .finding.sev-medium { border-left-color: var(--medium); }
+        .finding.sev-low { border-left-color: var(--low); }
+        .finding.sev-info { border-left-color: var(--info); }
+
+        .finding-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-md);
+            margin-bottom: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .finding-id {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.05em;
+        }
+
+        .finding-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2px;
+            letter-spacing: -0.005em;
+        }
+
+        .finding-cvss {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+
+        .cvss-high { background: rgba(245, 158, 11, 0.1); color: var(--text-muted); }
+        .cvss-medium { background: rgba(16, 185, 129, 0.1); color: var(--medium); }
+        .cvss-low { background: rgba(59, 130, 246, 0.1); color: var(--low); }
+
+        .finding-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: var(--space-md);
+        }
+
+        .finding-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .finding-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .finding-block-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .finding-block-label::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+        }
+
+        .finding-block pre {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm) var(--space-md);
+            overflow-x: auto;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .finding-block p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .finding-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: var(--space-sm);
+        }
+
+        .finding-tag {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            padding: 2px 8px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .timeline-item:last-child { padding-bottom: 0; }
+
+        .timeline-text strong { color: var(--text-primary); font-weight: 600; }
+
+        .rec-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+
+        .rec-item {
+            display: flex;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            transition: border-color var(--transition);
+        }
+
+        .rec-item:hover { border-color: var(--border-accent); }
+
+        .rec-num {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-muted);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-sm);
+        }
+
+        .rec-content { flex: 1; }
+
+        .rec-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .rec-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .rec-priority {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            letter-spacing: 0.08em;
+            align-self: flex-start;
+            flex-shrink: 0;
+        }
+
+        .priority-urgent { background: rgba(239, 68, 68, 0.1); color: var(--critical); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .priority-soon { background: rgba(245, 158, 11, 0.1); color: var(--text-muted); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .priority-planned { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); }
+
+        .report-footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: var(--space-2xl);
+            margin-top: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .report-footer::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+            opacity: 0.4;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-xl);
+            margin-bottom: var(--space-lg);
+        }
+
+        .footer-section { display: flex; flex-direction: column; gap: var(--space-xs); }
+
+        .footer-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding-bottom: 2px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .executor-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-top: 6px; margin-bottom: 0; line-height: 1.1; }
+        .executor-role { font-size: 11px; color: var(--text-muted); font-weight: 400; margin-top: 2px; line-height: 1.2; }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .contact-item a {
+            color: var(--accent);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            transition: opacity var(--transition);
+        }
+
+        .contact-item a:hover { opacity: 0.7; }
+
+        .footer-methodology { font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+
+        .footer-disclaimer {
+            padding: var(--space-md);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-md);
+            text-align: center;
+        }
+
+        .disclaimer-text { font-size: 10px; color: var(--text-muted); line-height: 1.6; }
+
+        .footer-hash {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 10px;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .hash-item { display: flex; align-items: center; gap: var(--space-sm); color: var(--text-muted); }
+        .hash-value { color: var(--text-secondary); word-break: break-all; }
+
+        .footer-copyright {
+            text-align: center;
+            margin-top: var(--space-lg);
+            padding-top: var(--space-md);
+            border-top: 1px solid var(--border-light);
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        @media (max-width: 1200px) {
+            .header-meta { grid-template-columns: repeat(2, 1fr); }
+            .exec-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+                        .report-header, .report-footer, main, .status-bar {
+            justify-content: center;
+                padding-left: var(--space-lg);
+                padding-right: var(--space-lg);
+            }
+            .header-meta { grid-template-columns: 1fr; }
+            .header-top { flex-direction: column; gap: var(--space-md); }
+            .footer-content { grid-template-columns: 1fr; }
+            .report-title { font-size: 16px; }
+            .finding-grid { grid-template-columns: 1fr; }
+            .key-stats { grid-template-columns: 1fr; }
+            
+        }
+
+        @media (max-width: 480px) {
+            .report-header, .report-footer, main, .status-bar {
+            justify-content: center;
+                padding-left: var(--space-md);
+                padding-right: var(--space-md);
+            }
+            .status-bar { gap: 0; }
+            justify-content: center;
+            .status-item { font-size: 10px; padding: 3px 6px; }
+        }
+
+        @media print {
+            body { background: #fff; color: #000; font-size: 11px; }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2220%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.4%22 opacity=%220.06%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2240%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.35%22 opacity=%220.055%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2285%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.045%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%22115%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2230%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2295%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2225%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2255%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2290%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22300%22%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2220%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.4%22 opacity=%220.06%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2240%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.35%22 opacity=%220.055%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%2285%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.045%22/%3E%3Ccircle cx=%22150%22 cy=%22150%22 r=%22115%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2230%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2260%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%220%22 cy=%220%22 r=%2295%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2225%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.3%22 opacity=%220.05%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2255%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.25%22 opacity=%220.04%22/%3E%3Ccircle cx=%22300%22 cy=%22300%22 r=%2290%22 fill=%22none%22 stroke=%22%2300D4FF%22 stroke-width=%220.2%22 opacity=%220.035%22/%3E%3C/svg%3E");
+            background-size: 300px 300px;
+            background-repeat: repeat;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.7;
+        }
+            .chevron { display: none; }
+        }
+
+        .terminal {
+            background: #0A0C10;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            margin-top: var(--space-sm);
+            overflow: hidden;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .terminal-titlebar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: var(--medium); }
+        .terminal-title-text {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-left: 8px;
+            flex: 1;
+        }
+        .terminal-body {
+            padding: 14px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            line-height: 1.6;
+            color: #E5E7EB;
+            overflow-x: auto;
+            white-space: pre;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .terminal-body .prompt {
+            color: #00E676;
+        }
+        .terminal-body .output {
+            color: #8B949E;
+        }
+        .terminal-body .prompt {
+            color: #00E676;
+            user-select: none;
+        }
+        .terminal-body .cmd {
+            color: #E5E7EB;
+        }
+        .terminal-body .output {
+            color: #8B949E;
+        }
+
+        .terminal-body .dollar {
+            color: #EAECEF;
+        }
+        .terminal-title-text .tilde {
+            color: #00D4FF;
+        }
+    
+        .solution-owner {
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(245, 158, 11, 0.05);
+            border-left: 3px solid var(--high);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm);
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .solution-dev {
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 3px solid var(--accent);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .solution-badge {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-right: var(--space-sm);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        .solution-owner .solution-badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--text-muted);
+        }
+        .solution-dev .solution-badge {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--accent);
+        }
+        .solution-dev code {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--accent);
+            background: rgba(0, 212, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+
+        .finding-desc-section {
+            margin-bottom: var(--space-sm);
+            padding-left: var(--space-sm);
+            border-left: 2px solid var(--border);
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        .finding-desc-section:last-child {
+            margin-bottom: 0;
+        }
+        .desc-label {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .desc-tech .desc-label { color: var(--accent); }
+        .desc-tech { border-left-color: var(--accent); color: var(--text-secondary); }
+        .desc-biz .desc-label { color: var(--text-muted); }
+        .desc-biz { border-left-color: var(--text-muted); color: var(--text-secondary); }
+        .desc-law .desc-label { color: var(--medium); }
+        .desc-law { border-left-color: var(--medium); color: var(--text-secondary); }
+
+        .bracket {
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+    .sev-info .finding-grid {
+            display: none !important;
+        }
+    .finding-desc code, .rec-desc code {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            background: var(--bg-deep);
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+            border: 1px solid var(--border);
+        }
+    
+        @media (min-width: 640px) {
+
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        .timeline-item {
+            position: relative;
+        }
+
+        .timeline-item:last-child::before {
+            border-color: #00E676;
+            background: #00E676;
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.4);
+        }
+        .timeline-time {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .timeline-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: var(--space-lg);
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 4px;
+            bottom: 4px;
+            width: 1px;
+            background: var(--border-light);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: var(--space-md);
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: var(--space-md);
+            align-items: flex-start;
+        }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: calc(-1 * var(--space-lg) + 3px);
+            top: 6px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 6px var(--accent-glow);
+        }
+        .timeline-item:last-child::before {
+            background: #00E676;
+            border-color: #00E676;
+            box-shadow: 0 0 8px rgba(0, 230, 118, 0.4);
+        }
+        .timeline-time {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .timeline-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .timeline-text strong { color: var(--text-primary); font-weight: 600; }
+
+        /* PANTHEON FOOTER PATCH */
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+        }
+        .hash-value {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--accent);
+            word-break: break-all;
+            line-height: 1.4;
+        }
+        .hash-item {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-sm);
+            align-items: baseline;
+        }
+        .hash-item span:first-child {
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+    
+    </style>
+</head>
+<body>
+
+<header class="report-header">
+    <div class="header-top">
+        <div class="header-brand">
+            <svg width="290" height="40" viewBox="0 0 290 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-logo-svg">
+                <path d="M6 8 L6 29 M6 8 L22 8" stroke="#00D4FF" stroke-width="5" stroke-linecap="round"/>
+                <line x1="6" y1="15" x2="18" y2="15" stroke="#00D4FF" stroke-width="5" stroke-linecap="round" opacity="0.5"/>
+                <line x1="6" y1="22" x2="14" y2="22" stroke="#00D4FF" stroke-width="5" stroke-linecap="round" opacity="0.3"/>
+                <circle cx="22" cy="8" r="3" fill="#00E676"/>
+                <text x="30" y="20" font-family="'JetBrains Mono', monospace" font-size="18" font-weight="700" fill="#00D4FF" letter-spacing="-0.5">PANTHEON_</text>
+                <text x="30" y="32" font-family="'Inter', sans-serif" font-size="11" font-weight="500" fill="#6B7280" letter-spacing="0.5">Automated Security Audit Engine</text>
+            </svg>
+        </div>
+        <div class="header-meta-group">
+            <div class="tlp-badge">TLP:AMBER</div>
+            <div class="tier-badge">GUARD</div>
+        </div>
+    </div>
+    <div class="header-title">
+        <h1 class="report-title">Аудит безопасности</h1>
+        <div class="report-target">example.com</div>
+    </div>
+    <div class="header-meta">
+        <div class="meta-item">
+            <span class="meta-label">ID отчёта</span>
+            <span class="meta-value">PANTHEON-G-1783104884</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Дата</span>
+            <span class="meta-value">03.07.2026 · 21:54 MSK</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Тариф</span>
+            <span class="meta-value accent">GUARD · 4 900 ₽</span>
+        </div>
+        <div class="meta-item">
+            <span class="meta-label">Исполнитель</span>
+            <span class="meta-value">Е. Свириденко</span>
+        </div>
+    </div>
+</header>
+
+<div class="status-bar">
+    <div class="status-item status-high">
+        <span class="status-dot"></span>
+        <span class="status-value">4</span>
+        <span class="status-label">HIGH</span>
+    </div>
+    <span class="status-separator"></span>
+    <div class="status-item status-medium">
+        <span class="status-dot"></span>
+        <span class="status-value">2</span>
+        <span class="status-label">MEDIUM</span>
+    </div>
+    <span class="status-separator"></span>
+    <div class="status-item status-low">
+        <span class="status-dot"></span>
+        <span class="status-value">14</span>
+        <span class="status-label">LOW</span>
+    </div>
+    <span class="status-separator"></span>
+    <div class="status-item status-info">
+        <span class="status-dot"></span>
+        <span class="status-value">27</span>
+        <span class="status-label">INFO</span>
+    </div>
+
+</div>
+
+<main>
+
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="idx">01</span>
+                <span>Executive Summary</span>
+            </div>
+            <div class="section-badge">OVERVIEW</div>
+        </div>
+        <div class="section-body">
+
+            <div class="exec-grid">
+                <div class="risk-score">
+                    <div class="score-ring">
+                        <svg width="140" height="140" viewBox="0 0 140 140" style="transform: rotate(-90deg);">
+                            <circle class="track" cx="70" cy="70" r="60" fill="none" stroke="#181C24" stroke-width="10"/>
+                            <circle class="fill" style="" cx="70" cy="70" r="60" fill="none" stroke="#FF5700" stroke-width="10" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="79.2"/>
+                        </svg>
+                        <div class="score-value">
+                            <div class="score-number" style="color: #FF5700;">7.9</div>
+                            <div class="score-max">/ 10.0</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 14px; font-weight: 700; color: #FF5700;">Высокая экспозиция</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Уровень риска</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px; max-width: 220px; line-height: 1.4;">Критические уязвимости доступны для эксплуатации. Требуется немедленное реагирование.</div>
+                </div>
+
+                <div class="exec-summary-text">
+                    <p>Выполнен активный L2-аудит <strong>example.com</strong> (GUARD). Режим read-only обеспечил нулевое воздействие на инфраструктуру: мы выявили уязвимости, не нарушая работу ваших сервисов.</p>
+                    <p style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); letter-spacing: 0.02em; line-height: 1.6;">
+                        <strong style="color: var(--text-primary); font-weight: 600;">Примечание:</strong> аудит выполнен на уровне L2 — уязвимости подтверждены, эксплуатация не производилась. Инфраструктура не затронута.
+                    </p>
+
+                    <p>Обнаружено <strong style="font-family: var(--font-mono); font-size: 14px;">47</strong> находок: 
+                    <span style="display: inline-flex; align-items: center; gap: 4px; margin: 0 2px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--high); flex-shrink: 0;"></span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--high);">4 HIGH</span></span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; margin: 0 2px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--medium); flex-shrink: 0;"></span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--medium);">2 MEDIUM</span></span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; margin: 0 2px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--low); flex-shrink: 0;"></span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--low);">14 LOW</span></span>
+                    <span style="display: inline-flex; align-items: center; gap: 4px; margin: 0 2px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--info); flex-shrink: 0;"></span><span style="font-family: var(--font-mono); font-weight: 600; color: var(--info);">27 INFO</span></span>
+                    .</p>
+                    <div class="key-stats">
+                        <div class="key-stat">
+                            <span class="key-stat-label">Эндпоинтов</span>
+                            <span class="key-stat-value">147</span>
+                        </div>
+                        <div class="key-stat">
+                            <span class="key-stat-label">Время аудита</span>
+                            <span class="key-stat-value">4.0 мин</span>
+                        </div>
+                        <div class="key-stat">
+                            <span class="key-stat-label">Технологий</span>
+                            <span class="key-stat-value">7</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                                    <div style="margin-top: var(--space-md); display: flex; flex-direction: column; gap: var(--space-sm);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-sm);">Бизнес-импакт</div>
+
+                <div style="display: flex; align-items: baseline; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-primary); white-space: nowrap;">Репутация</span>
+                    <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--text-muted); padding: 1px 8px; background: rgba(245,158,11,0.08); border-radius: 3px; white-space: nowrap;">Высокий риск</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">Кража сессий пользователей через XSS</span>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-primary); white-space: nowrap;">Финансы</span>
+                    <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--text-muted); padding: 1px 8px; background: rgba(245,158,11,0.08); border-radius: 3px; white-space: nowrap;">Средний риск</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">XSS-атаки — кража платёжных данных через JavaScript</span>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: var(--space-sm); padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-primary); white-space: nowrap;">Регуляторика</span>
+                    <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 600; color: var(--text-muted); padding: 1px 8px; background: rgba(245,158,11,0.08); border-radius: 3px; white-space: nowrap;">Высокий риск</span>
+                    <span style="font-size: 10px; color: var(--text-muted);">Нарушение 152-ФЗ ст.19 — штраф до 500 000 ₽</span>
+                </div>
+
+
+            </div>
+
+        <!-- КРИТИЧЕСКИЕ УГРОЗЫ -->
+        <div style="margin-top: var(--space-md);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-md);">Устранить в первую очередь</div>
+                <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+
+                    <div style="display: flex; align-items: center; gap: var(--space-md); padding: var(--space-sm) var(--space-md); background: rgba(245, 158, 11, 0.06); border-left: 3px solid var(--high); border-radius: var(--radius-sm);">
+                        <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--text-muted); min-width: 48px;">01</span>
+                        <div style="flex: 1;"><span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">CSP Missing</span><span style="font-size: 10px; color: var(--text-muted); margin-left: var(--space-sm);">· 4ч</span></div>
+                        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">24Ч</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-md); padding: var(--space-sm) var(--space-md); background: rgba(245, 158, 11, 0.06); border-left: 3px solid var(--high); border-radius: var(--radius-sm);">
+                        <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--text-muted); min-width: 48px;">02</span>
+                        <div style="flex: 1;"><span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">HSTS (HSTS) Missing</span><span style="font-size: 10px; color: var(--text-muted); margin-left: var(--space-sm);">· 4ч</span></div>
+                        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">24Ч</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: var(--space-md); padding: var(--space-sm) var(--space-md); background: rgba(245, 158, 11, 0.06); border-left: 3px solid var(--high); border-radius: var(--radius-sm);">
+                        <span style="font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--text-muted); min-width: 48px;">03</span>
+                        <div style="flex: 1;"><span style="font-size: 12px; font-weight: 600; color: var(--text-primary);">Clickjacking  (X-Frame-Options / CSP)</span><span style="font-size: 10px; color: var(--text-muted); margin-left: var(--space-sm);">· 4ч</span></div>
+                        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">24Ч</span>
+                    </div>
+                </div>
+                <div style="margin-top: var(--space-sm); font-size: 10px; color: var(--text-secondary); line-height: 1.6; padding: 8px 12px; background: rgba(239, 68, 68, 0.05); border-left: 2px solid var(--critical); border-radius: 0 4px 4px 0;">
+                    <strong style="color: var(--text-muted);">Последствия бездействия:</strong> перехват сессий пользователей · внедрение вредоносного кода · перехват трафика · фишинг от имени домена
+                </div>
+            </div>
+
+            <!-- БИЗНЕС-МЕТРИКИ -->
+            <div style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-md);">Бизнес-метрики</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm);">
+                    <div style="padding: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Потенциальный ущерб</div>
+                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--critical);">850 000 ₽</div>
+                        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Штрафы + инциденты</div>
+                    </div>
+                    <div style="padding: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Стоимость устранения</div>
+                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--accent);">54 000 ₽</div>
+                        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">~18 часов работы</div>
+                    </div>
+                    <div style="padding: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">ROI исправлений</div>
+                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--low);">15.7x</div>
+                        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Окупаемость 7 дней</div>
+                    </div>
+                    <div style="padding: var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); text-align: center;">
+                        <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">Штраф 152-ФЗ</div>
+                        <div style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--text-muted);">500 000 ₽</div>
+                        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">КоАП ст.13.11</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="benchmark" style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-md);">
+                    <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Сравнение с отраслью</span>
+                    <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">E-COMMERCE · РФ</span>
+                </div>
+                <div class="benchmark-bar-container" style="position: relative; height: 28px; background: linear-gradient(to right, #10B981 0%, #F59E0B 50%, #EF4444 100%); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;">
+                    <div style="position: absolute; left: 42%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.6); z-index: 2;"></div>
+                    <div style="position: absolute; left: 42%; top: 50%; transform: translate(-50%, -50%); font-family: var(--font-mono); font-size: 10px; color: #fff; z-index: 4; text-shadow: 0 1px 2px rgba(0,0,0,0.6);">4.2</div>
+                    <div style="position: absolute; left: 79.0%; top: 0; bottom: 0; width: 3px; background: #fff; z-index: 3; box-shadow: 0 0 8px rgba(0,0,0,0.5);"></div>
+                    <div style="position: absolute; left: 79.0%; top: 50%; transform: translate(-50%, -50%); font-family: var(--font-mono); font-size: 11px; color: #fff; font-weight: 700; z-index: 4; text-shadow: 0 1px 2px rgba(0,0,0,0.6);">7.9</div>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: var(--space-xs); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted);">
+                    <span>0 · <span style="color: var(--low);">Низкий</span></span>
+                    <span>Средний по отрасли: 4.2</span>
+                    <span>Ваш: 7.9</span>
+                    <span>10 · <span style="color: #EF4444;">Критичный</span></span>
+                </div>
+            </div>
+
+            <div class="distribution" style="margin-top: var(--space-md); padding-top: var(--space-md); border-top: 1px solid var(--border);">
+            <div>
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-md);">Распределение уязвимостей</div>
+            </div>
+                <div class="dist-row dist-high">
+                    <div class="dist-label"><span class="dot"></span>High</div>
+                    <div class="dist-bar"><div class="dist-bar-fill" style="width: 8%;"></div></div>
+                    <div class="dist-count">4</div>
+                </div>
+                <div class="dist-row dist-medium">
+                    <div class="dist-label"><span class="dot"></span>Medium</div>
+                    <div class="dist-bar"><div class="dist-bar-fill" style="width: 4%;"></div></div>
+                    <div class="dist-count">2</div>
+                </div>
+                <div class="dist-row dist-low">
+                    <div class="dist-label"><span class="dot"></span>Low</div>
+                    <div class="dist-bar"><div class="dist-bar-fill" style="width: 29%;"></div></div>
+                    <div class="dist-count">14</div>
+                </div>
+                <div class="dist-row dist-info">
+                    <div class="dist-label"><span class="dot"></span>Info</div>
+                    <div class="dist-bar"><div class="dist-bar-fill" style="width: 57%;"></div></div>
+                    <div class="dist-count">27</div>
+                </div>
+            </div>
+
+        </div>
+            <div class="sources" style="margin-top: var(--space-lg); padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); line-height: 1.8;">
+                <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Источники:</span><br>
+                OWASP Risk Rating Methodology · Positive Technologies «Угрозы веб-приложений 2025» · НКЦКИ бюллетень Q1 2026 · Infowatch отраслевой отчёт 2025 · BI.ZONE 2025
+            </div>
+
+    </section>
+
+    <!-- ИНФРАСТРУКТУРА И SCOPE -->
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="idx">02</span>
+                <span>Инфраструктура и Scope</span>
+            </div>
+            <div class="section-badge">SURFACE</div>
+        </div>
+        <div class="section-body">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-bottom: var(--space-lg);">
+                <!-- Технологический стек -->
+                <div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-md);">Технологический стек</div>
+                    <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">Язык</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">PHP</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">CMS</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">1C-Bitrix</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">Аналитика</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">Yandex Metrika</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">БД</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">MySQL</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">Веб-сервер</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">Nginx/Apache</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">JS</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">jQuery, Bootstrap, Swiper, Fancybox</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">CSS</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">Bootstrap</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">SSL</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">Валидный (GlobalSign) · до 13.07.2026</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">Хостинг</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">JSC TIMEWEB</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">NS</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">ns1.example.com, ns2.example.com</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <span style="font-size: 11px; color: var(--text-secondary);">Возраст домена</span>
+                            <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">2001-11-22</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scope аудита -->
+                <div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-md);">Scope аудита</div>
+                    <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+                        <div style="padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">В scope</div>
+                            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--low);">example.com, *.example.com (3 поддомена)</div>
+                            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--low);">147 эндпоинтов · 21/tcp, 80/tcp, 443/tcp портов</div>
+                        </div>
+                        <div style="padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Вне scope</div>
+                            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary);">Внутренняя сеть · Социальная инженерия</div>
+                            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary);">DDoS-тестирование · Физический доступ</div>
+                        </div>
+                        <div style="padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                            <div style="font-size: 10px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">Метод</div>
+                            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">Black-box · Внешний аудит · Чтение</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Поддомены -->
+            <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--border);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-md);">Обнаруженные поддомены</div>
+                <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);">
+                    <span style="font-family: var(--font-mono); font-size: 10px; padding: 4px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--accent);">www.example.com (92.255.106.152)</span> <span style="font-family: var(--font-mono); font-size: 10px; padding: 4px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted);">mail.example.com (91.189.116.40)</span> <span style="font-family: var(--font-mono); font-size: 10px; padding: 4px 12px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted);">old.example.com (92.255.106.152)</span>
+                </div>
+                <div style="display: flex; gap: var(--space-md); margin-top: var(--space-sm); font-size: 10px; color: var(--text-muted);">
+                    <span><span style="color: var(--accent);">■</span> Основной</span>
+                    <span><span style="color: var(--text-secondary);">■</span> Инфраструктурный</span>
+                    <span><span style="color: var(--high);">■</span> Требует внимания</span>
+                </div>
+            </div>
+
+            <!-- Порты -->
+            <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--border);">
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-md);">Открытые порты</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm);">
+
+                    <div style="padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; justify-content: space-between;">
+                        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">21/tcp</span>
+                        <span style="font-size: 10px; color: var(--text-muted);"></span>
+                    </div>
+                    <div style="padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; justify-content: space-between;">
+                        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">80/tcp</span>
+                        <span style="font-size: 10px; color: var(--text-muted);"></span>
+                    </div>
+                    <div style="padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); display: flex; justify-content: space-between;">
+                        <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-primary);">443/tcp</span>
+                        <span style="font-size: 10px; color: var(--text-muted);"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+            <div class="sources" style="margin-top: var(--space-lg); padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); line-height: 1.8;">
+                <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Источники:</span><br>
+                IANA Service Name and Transport Protocol Port Number Registry · Wappalyzer fingerprint database · BuiltWith technology lookup · Cloudflare Radar
+            </div>
+
+    </section>
+
+    <!-- МАТРИЦА МОДУЛЕЙ -->
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="idx">03</span>
+                <span>Матрица модулей</span>
+            </div>
+            <div class="section-badge">ENGINES</div>
+        </div>
+        <div class="section-body">
+            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-md);"><table style="width: 100%; border-collapse: collapse; min-width: 480px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-accent);">
+                        <th style="text-align: left; padding: 12px 12px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Модуль</th>
+                        <th style="text-align: center; padding: 12px 8px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; width: 50px;">Найдено</th>
+                        <th style="text-align: center; padding: 12px 8px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; width: 50px;">Крит.</th>
+                        <th style="text-align: right; padding: 12px 12px; font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">HERMES</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Email-безопасность</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">5</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">GAEA</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">DNS-разведка</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">6</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">ATHENA</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Заголовки безопасности</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">HEPHAESTUS</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Технологический стек</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">11</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">ARGONAUT</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">CORS-анализ</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">CRYPTUS</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">SSL/TLS-анализ</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">PERSEUS</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Обход WAF</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">ARGUS</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Хостинг-разведка</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">JANUS</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Сканер портов</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">2</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">CHARON</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Cookie-безопасность</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">POSEIDON</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Origin IP Discovery</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">2</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">ORACLE</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Детект CMS</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">KRONOS</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Rate Limiting</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">8</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">APOLLO</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">GraphQL-аудит</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">1</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">0</td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 14px 12px;">
+                            <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--text-primary); letter-spacing: 0.05em;">CASSANDRA</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 3px; line-height: 1.5;">Предсказание атак</div>
+                        </td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);">5</td>
+                        <td style="text-align: center; padding: 14px 8px; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--text-primary);"><span style="color: var(--high); background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 2px 8px; border-radius: 4px;">4</span></td>
+                        <td style="text-align: right; padding: 14px 12px;"><span style="font-size: 10px; color: #00E676; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #00E676;"></span>Завершён</span></td>
+                    </tr>
+                </tbody>
+            </table></div>
+<div class="sources" style="margin-top: var(--space-lg); padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); line-height: 1.8;">
+                <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Модули:</span><br>
+                PANTHEON Engine v8.8.1 · 15 из 42 модулей активированы для тарифа GUARD · MITRE ATT&CK v16 mapping
+            </div>
+        </div>
+    </section>
+
+    <!-- НАХОДКИ -->
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="idx">04</span>
+                <span>Находки</span>
+            </div>
+            <div class="section-badge">FINDINGS</div>
+        </div>
+        <div class="section-body">
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-lg);">
+                <div style="padding: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center;">
+                    <div style="font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--info);">41</div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">L1 · Обнаружено</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">15/16 модулей разведки</div>
+                </div>
+                <div style="padding: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center;">
+                    <div style="font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--text-muted);">6</div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">L2 · Подтверждено</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">26/26 модулей верификации</div>
+                </div>
+                <div style="padding: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center;">
+                    <div style="font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--text-muted);">0</div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">L3 · Эксплуатация</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Доступно в тарифе SENTINEL</div>
+                </div>
+                <div style="padding: var(--space-sm); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center;">
+                    <div style="font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--low);">0</div>
+                    <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;">Ложные</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Автофильтрация</div>
+                </div>
+            </div>
+
+            <div style="font-size: 10px; color: var(--text-muted); line-height: 1.6; margin-bottom: var(--space-lg); padding: var(--space-sm) var(--space-md); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                <strong style="color: var(--text-primary);">Трёхэтапная верификация:</strong> 
+                <span style="color: var(--info);">L1</span> — разведка: 15/16 модулей (порты, DNS, CMS, заголовки) · 
+                <span style="color: var(--text-muted);">L2</span> — верификация: 26/26 модулей (инъекции, CORS, auth, cookies) · 
+                <span style="color: var(--text-muted);">L3</span> — эксплуатация: 15 модулей, доступно в тарифе SENTINEL · 
+                <span style="color: var(--low);">Ложные</span> — автофильтрация
+            </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="category-block sev-high">
+        <div class="category-header" onclick="toggleCategory(this)">
+            <div class="category-title">
+                <div class="severity-indicator"></div>
+                <div>
+                    <div class="category-name">High Severity Findings</div><span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); letter-spacing: 0.1em; margin-left: var(--space-sm);">L2</span>
+                    <div class="category-count">4 уязвимости · требуют приоритетного устранения</div>
+                </div>
+            </div>
+            <div class="category-meta">
+                <span class="severity-tag tag-high">HIGH</span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+        </div>
+        <div class="category-body">
+            <div class="category-content">
+
+                <div class="finding sev-high">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-1021</div>
+                            <div class="finding-title">Content-Security-Policy (CSP) Missing</div>
+                        </div>
+                        <div class="finding-cvss cvss-high">CVSS 7.5</div>
+                    </div>
+                    <div class="finding-desc"><div class="finding-desc-section desc-tech"><span class="desc-label">Технически</span>Заголовок <code>Content-Security-Policy</code> отсутствует. Браузер не ограничен в загрузке скриптов и стилей, что делает приложение полностью открытым для XSS-атак через сторонние компоненты.</div><div class="finding-desc-section desc-biz"><span class="desc-label">Бизнес-риск</span>Возможность внедрения вредоносного кода на сайт. Кража сессий пользователей, платёжных данных, персональной информации. Остановка продаж на время расследования инцидента.</div><div class="finding-desc-section desc-law"><span class="desc-label">Юридически</span>Нарушение 152-ФЗ (ст.19 — утечка ПДн). Штраф до 500 000 ₽. Обязанность уведомить Роскомнадзор в течение 24 часов.</div></div>
+                    <div class="finding-grid">
+                        <div class="finding-block">
+                            <div class="finding-block-label">Proof of Concept</div>
+                            <div class="terminal">
+                                <div class="terminal-titlebar">
+                                    <div class="terminal-dots">
+                                        <span class="terminal-dot dot-red"></span>
+                                        <span class="terminal-dot dot-yellow"></span>
+                                        <span class="terminal-dot dot-green"></span>
+                                    </div>
+                                    <span class="terminal-title-text">PANTHEON_CORE_PWN</span>
+                                </div>
+                                <div class="terminal-body"><span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> curl -sI https://example.com/ | grep -i content-security-policy
+<span class="output">Content-Security-Policy: (отсутствует)</span></div>
+                            </div>
+                        </div>
+                        <div class="finding-block">
+                            <div class="finding-block-label">Решение</div>
+                            <div class="solution-owner"><span class="solution-badge">Владельцу</span>Внедрить строгий CSP (Nonce-based или strict-dynamic). Провести аудит frontend-разработки.</div><div class="solution-dev"><span class="solution-badge">Разработчику</span><code>Content-Security-Policy: default-src 'self'; script-src 'nonce-...' 'strict-dynamic'; style-src 'self'</code></div>
+                        </div>
+                    </div>
+                    <div class="finding-tags">
+                        
+                        <span class="finding-tag">CASSANDRA</span>
+                        
+                        <span class="finding-tag">CSP</span>
+                        
+                        <span class="finding-tag">HEADERS</span>
+                        
+                        <span class="finding-tag">MISCONFIG</span>
+                        
+                    </div>
+                </div>
+
+                <div class="finding sev-high">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-311</div>
+                            <div class="finding-title">Strict-Transport-Security (HSTS) Missing</div>
+                        </div>
+                        <div class="finding-cvss cvss-high">CVSS 7.5</div>
+                    </div>
+                    <div class="finding-desc"><div class="finding-desc-section desc-tech"><span class="desc-label">Технически</span>Заголовок <code>Strict-Transport-Security</code> отсутствует. Браузер может быть переведён на HTTP через SSL-stripping, что подвергает сессию атаке Man-In-The-Middle.</div><div class="finding-desc-section desc-biz"><span class="desc-label">Бизнес-риск</span>Перехват трафика пользователей в публичных Wi-Fi сетях. Кража сессионных cookie, учётных данных. Потеря доверия клиентов при публичной компрометации.</div><div class="finding-desc-section desc-law"><span class="desc-label">Юридически</span>Нарушение 152-ФЗ (ст.19 — неправомерный доступ к ПДн). Штраф до 500 000 ₽. Административная ответственность по КоАП ст.13.11.</div></div>
+                    <div class="finding-grid">
+                        <div class="finding-block">
+                            <div class="finding-block-label">Proof of Concept</div>
+                            <div class="terminal">
+                                <div class="terminal-titlebar">
+                                    <div class="terminal-dots">
+                                        <span class="terminal-dot dot-red"></span>
+                                        <span class="terminal-dot dot-yellow"></span>
+                                        <span class="terminal-dot dot-green"></span>
+                                    </div>
+                                    <span class="terminal-title-text">PANTHEON_CORE_PWN</span>
+                                </div>
+                                <div class="terminal-body"><span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> curl -sI https://example.com/ | grep -i strict-transport
+<span class="output">Strict-Transport-Security: (отсутствует)</span></div>
+                            </div>
+                        </div>
+                        <div class="finding-block">
+                            <div class="finding-block-label">Решение</div>
+                            <div class="solution-owner"><span class="solution-badge">Владельцу</span>Включить HSTS на веб-сервере с минимальным сроком 1 год. Проверить все поддомены.</div><div class="solution-dev"><span class="solution-badge">Разработчику</span><code>add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains' always;</code></div>
+                        </div>
+                    </div>
+                    <div class="finding-tags">
+                        
+                        <span class="finding-tag">CASSANDRA</span>
+                        
+                        <span class="finding-tag">HSTS</span>
+                        
+                        <span class="finding-tag">HEADERS</span>
+                        
+                        <span class="finding-tag">MISCONFIG</span>
+                        
+                    </div>
+                </div>
+
+                <div class="finding sev-high">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-1021</div>
+                            <div class="finding-title">Clickjacking Protection Missing (X-Frame-Options / CSP)</div>
+                        </div>
+                        <div class="finding-cvss cvss-high">CVSS 6.5</div>
+                    </div>
+                    <div class="finding-desc"><div class="finding-desc-section desc-tech"><span class="desc-label">Технически</span>Заголовки <code>X-Frame-Options</code> и директива <code>frame-ancestors</code> в CSP отсутствуют. Страница может быть встроена в невидимый <code>&lt;iframe&gt;</code> на злоумышленном сайте.</div><div class="finding-desc-section desc-biz"><span class="desc-label">Бизнес-риск</span>Атака Clickjacking: пользователь думает что кликает по вашему сайту, а на самом деле — по прозрачной кнопке злоумышленника. Перевод средств, удаление аккаунта, смена пароля.</div><div class="finding-desc-section desc-law"><span class="desc-label">Юридически</span>Нарушение 152-ФЗ (ст.7 — конфиденциальность ПДн). Несанкционированные действия от имени пользователя. Штраф до 500 000 ₽.</div></div>
+                    <div class="finding-grid">
+                        <div class="finding-block">
+                            <div class="finding-block-label">Proof of Concept</div>
+                            <div class="terminal">
+                                <div class="terminal-titlebar">
+                                    <div class="terminal-dots">
+                                        <span class="terminal-dot dot-red"></span>
+                                        <span class="terminal-dot dot-yellow"></span>
+                                        <span class="terminal-dot dot-green"></span>
+                                    </div>
+                                    <span class="terminal-title-text">PANTHEON_CORE_PWN</span>
+                                </div>
+                                <div class="terminal-body"><span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> curl -sI https://example.com/ | grep -i x-frame
+<span class="output">X-Frame-Options: (отсутствует)</span></div>
+                            </div>
+                        </div>
+                        <div class="finding-block">
+                            <div class="finding-block-label">Решение</div>
+                            <div class="solution-owner"><span class="solution-badge">Владельцу</span>Защитить сайт от встраивания в iframe. Проверить все страницы, особенно формы оплаты и профиля.</div><div class="solution-dev"><span class="solution-badge">Разработчику</span><code>add_header X-Frame-Options 'SAMEORIGIN' always;</code></div>
+                        </div>
+                    </div>
+                    <div class="finding-tags">
+                        
+                        <span class="finding-tag">CASSANDRA</span>
+                        
+                        <span class="finding-tag">CLICKJACKING</span>
+                        
+                        <span class="finding-tag">HEADERS</span>
+                        
+                        <span class="finding-tag">MISCONFIG</span>
+                        
+                    </div>
+                </div>
+
+                <div class="finding sev-high">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-614</div>
+                            <div class="finding-title">Insecure Cookie Configuration</div>
+                        </div>
+                        <div class="finding-cvss cvss-high">CVSS 6.5</div>
+                    </div>
+                    <div class="finding-desc"><div class="finding-desc-section desc-tech"><span class="desc-label">Технически</span>Обнаружены проблемы с флагами безопасности cookie: <ul><li><code><code>__ddg8_</code> без флага SameSite (уязвима к CSRF)</code></li><li><code><code>__ddg9_</code> без флага HttpOnly (доступна из JS -> XSS кража)</code></li><li><code><code>PHPSESSID</code> без флага Secure (передается по HTTP)</code></li><li><code><code>__ddg9_</code> без флага SameSite (уязвима к CSRF)</code></li></ul>. Отсутствие флагов <code>Secure</code>, <code>HttpOnly</code> или <code>SameSite</code> позволяет перехватывать сессии через XSS или MITM.</div><div class="finding-desc-section desc-biz"><span class="desc-label">Бизнес-риск</span>Кража сессионных cookie через XSS-уязвимость. Доступ к аккаунтам пользователей без пароля. Компрометация личных кабинетов, историй заказов, платёжных данных.</div><div class="finding-desc-section desc-law"><span class="desc-label">Юридически</span>Нарушение 152-ФЗ (ст.19 — утечка ПДн через кражу сессий). Штраф до 500 000 ₽. Ответственность за неправомерный доступ к компьютерной информации (УК РФ ст.272).</div></div>
+                    <div class="finding-grid">
+                        <div class="finding-block">
+                            <div class="finding-block-label">Proof of Concept</div>
+                            <div class="terminal">
+                                <div class="terminal-titlebar">
+                                    <div class="terminal-dots">
+                                        <span class="terminal-dot dot-red"></span>
+                                        <span class="terminal-dot dot-yellow"></span>
+                                        <span class="terminal-dot dot-green"></span>
+                                    </div>
+                                    <span class="terminal-title-text">PANTHEON_CORE_PWN</span>
+                                </div>
+                                <div class="terminal-body"><span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> curl -sI https://example.com/ | grep -i set-cookie
+<span class="output">Set-Cookie: session_id=...; (без Secure/HttpOnly/SameSite)</span></div>
+                            </div>
+                        </div>
+                        <div class="finding-block">
+                            <div class="finding-block-label">Решение</div>
+                            <div class="solution-owner"><span class="solution-badge">Владельцу</span>Установить флаги Secure, HttpOnly, SameSite=Strict для всех сессионных cookie. Провести аудит cookie-политики.</div><div class="solution-dev"><span class="solution-badge">Разработчику</span><code>Set-Cookie: session_id=...; Secure; HttpOnly; SameSite=Strict; Path=/</code></div>
+                        </div>
+                    </div>
+                    <div class="finding-tags">
+                        
+                        <span class="finding-tag">CASSANDRA</span>
+                        
+                        <span class="finding-tag">COOKIES</span>
+                        
+                        <span class="finding-tag">SESSION</span>
+                        
+                        <span class="finding-tag">MISCONFIG</span>
+                        
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <section class="category-block sev-medium">
+        <div class="category-header" onclick="toggleCategory(this)">
+            <div class="category-title">
+                <div class="severity-indicator"></div>
+                <div>
+                    <div class="category-name">Medium Severity Findings</div><span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); letter-spacing: 0.1em; margin-left: var(--space-sm);">L2</span>
+                    <div class="category-count">2 уязвимости · плановое устранение</div>
+                </div>
+            </div>
+            <div class="category-meta">
+                <span class="severity-tag tag-medium">MEDIUM</span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+        </div>
+        <div class="category-body">
+            <div class="category-content">
+
+                <div class="finding sev-medium">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Infrastructure Leak via MX Record</div>
+                        </div>
+                        <div class="finding-cvss cvss-medium">CVSS 4.3</div>
+                    </div>
+                    <div class="finding-desc"><div class="finding-desc-section desc-tech"><span class="desc-label">Технически</span>Почтовый сервер <code>mx03.nicmail.ru</code> имеет публичный IP <code>91.189.116.16</code>, не защищенный CDN/WAF. DNS-запись MX раскрывает реальный IP-адрес почтовой инфраструктуры.</div><div class="finding-desc-section desc-biz"><span class="desc-label">Бизнес-риск</span>DDoS-атака на почтовый сервер в обход защиты. Компрометация корпоративной переписки через прямые атаки на SMTP.</div><div class="finding-desc-section desc-law"><span class="desc-label">Юридически</span>Нарушение требований к защите информации (ст.16 152-ФЗ). Раскрытие инфраструктурных данных. Риск штрафов при проверке ФСТЭК.</div></div>
+                    <div class="finding-grid">
+                        <div class="finding-block">
+                            <div class="finding-block-label">Proof of Concept</div>
+                            <div class="terminal">
+                                <div class="terminal-titlebar">
+                                    <div class="terminal-dots">
+                                        <span class="terminal-dot dot-red"></span>
+                                        <span class="terminal-dot dot-yellow"></span>
+                                        <span class="terminal-dot dot-green"></span>
+                                    </div>
+                                    <span class="terminal-title-text">PANTHEON_CORE_PWN</span>
+                                </div>
+                                <div class="terminal-body"><span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> dig +short example.com MX
+<span class="output">MX: mx03.nicmail.ru (91.189.116.16)</span></div>
+                            </div>
+                        </div>
+                        <div class="finding-block">
+                            <div class="finding-block-label">Решение</div>
+                            <div class="solution-owner"><span class="solution-badge">Владельцу</span>Скрыть почтовый сервер за CDN или фаерволом. Настроить фильтрацию трафика по IP.</div><div class="solution-dev"><span class="solution-badge">Разработчику</span><code>iptables -A INPUT -p tcp --dport 25 -j DROP</code></div>
+                        </div>
+                    </div>
+                    <div class="finding-tags">
+                        
+                        <span class="finding-tag">APOLLO</span>
+                        
+                        <span class="finding-tag">INFO_LEAK</span>
+                        
+                        <span class="finding-tag">MX</span>
+                        
+                        <span class="finding-tag">INFRASTRUCTURE</span>
+                        
+                    </div>
+                </div>
+
+                <div class="finding sev-medium">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-693</div>
+                            <div class="finding-title">Security Headers Posture Assessment (Grade: F)</div>
+                        </div>
+                        <div class="finding-cvss cvss-medium">CVSS 4.3</div>
+                    </div>
+                    <div class="finding-desc"><div class="finding-desc-section desc-tech"><span class="desc-label">Технически</span>Общая оценка безопасности HTTP-заголовков: <strong>F (0%)</strong>. Отсутствуют критичные заголовки по ГОСТ Р 57580.1-2017: <code><code>content-security-policy</code> (п.5.2.2 (Защита от внедрения кода)), <code>strict-transport-security</code> (п.5.1.3 (Защита транспортного уровня)), <code>x-frame-options</code> (п.5.2.1 (Защита от визуального обмана)), <code>cross-origin-opener-policy</code> (п.5.2.4 (Изоляция контекста browsing)), <code>permissions-policy</code> (п.5.2.3 (Ограничение API браузера)), <code>x-content-type-options</code> (п.5.1.4 (Защита от MIME-sniffing)), <code>referrer-policy</code> (п.5.1.5 (Защита реферера)), <code>cross-origin-resource-policy</code> (п.5.2.5 (Контроль кросс-доменных запросов))</code>.</div><div class="finding-desc-section desc-biz"><span class="desc-label">Бизнес-риск</span>Повышенная поверхность атаки. Отсутствие эшелонированной защиты. Снижение рейтинга безопасности при аудите контрагентами.</div><div class="finding-desc-section desc-law"><span class="desc-label">Юридически</span>Несоответствие ГОСТ Р 57580.1-2017 (раздел 6). Рекомендательный характер НКЦКИ обязывает к устранению. При инциденте — отягчающее обстоятельство.</div></div>
+                    <div class="finding-grid">
+                        <div class="finding-block">
+                            <div class="finding-block-label">Proof of Concept</div>
+                            <div class="terminal">
+                                <div class="terminal-titlebar">
+                                    <div class="terminal-dots">
+                                        <span class="terminal-dot dot-red"></span>
+                                        <span class="terminal-dot dot-yellow"></span>
+                                        <span class="terminal-dot dot-green"></span>
+                                    </div>
+                                    <span class="terminal-title-text">PANTHEON_CORE_PWN</span>
+                                </div>
+                                <div class="terminal-body"><span style="color: #00E676;">➜</span> <span style="color: #00D4FF;">root@pantheon</span> <span style="color: #F59E0B;">~</span> <span style="color: #EF4444;">✗</span> curl -sI https://example.com/ | grep -iE &#39;x-content-type|x-frame|referrer-policy&#39;
+<span class="output">X-Content-Type-Options: (отсутствует)</span></div>
+                            </div>
+                        </div>
+                        <div class="finding-block">
+                            <div class="finding-block-label">Решение</div>
+                            <div class="solution-owner"><span class="solution-badge">Владельцу</span>Настроить отсутствующие заголовки согласно спецификации OWASP и ГОСТ Р 57580.1-2017.</div><div class="solution-dev"><span class="solution-badge">Разработчику</span><code>add_header X-Content-Type-Options 'nosniff'; add_header Referrer-Policy 'strict-origin-when-cross-origin';</code></div>
+                        </div>
+                    </div>
+                    <div class="finding-tags">
+                        
+                        <span class="finding-tag">CASSANDRA</span>
+                        
+                        <span class="finding-tag">HEADERS</span>
+                        
+                        <span class="finding-tag">MISCONFIG</span>
+                        
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <section class="category-block sev-low">
+        <div class="category-header" onclick="toggleCategory(this)">
+            <div class="category-title">
+                <div class="severity-indicator"></div>
+                <div>
+                    <div class="category-name">Low Severity Findings</div><span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); letter-spacing: 0.1em; margin-left: var(--space-sm);">L1</span>
+                    <div class="category-count">14 уязвимостей · минимальный риск</div>
+                </div>
+            </div>
+            <div class="category-meta">
+                <span class="severity-tag tag-low">LOW</span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+        </div>
+        <div class="category-body">
+            <div class="category-content">
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-319</div>
+                            <div class="finding-title">MTA-STS Not Configured</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.3</div>
+                    </div>
+                    <div class="finding-desc"><p>MTA-STS для домена <code>example.com</code> не настроен. Политика принудительного TLS-шифрования между почтовыми серверами отсутствует. Любое соединение с MX-сервером домена может быть принудительно понижено до открытого текста.</p><p>Файл политики <code>https://mta-sts.example.com/.well-known/mta-sts.txt</code> не обнаружен — директива <code>mode: enforce</code> отсутствует. Злоумышленник, контролирующий промежуточный узел, перехватывает содержимое корпоративной переписки без детекта.</p><p><strong>Последствия:</strong> перехват почтового трафика через MITM-атаку. Компрометация конфиденциальных документов и ПДн. Нарушение 152-ФЗ ст.19.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-319</div>
+                            <div class="finding-title">SMTP STARTTLS Not Supported</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.3</div>
+                    </div>
+                    <div class="finding-desc"><p>SMTP-сервер домена <code>example.com</code> не поддерживает STARTTLS. Исходящая и входящая почта передаётся в открытом виде без шифрования транспортного уровня.</p><p>Проверка MX-хостов на порту 25 подтвердила отсутствие расширения <code>STARTTLS</code> в ответе EHLO. Соединение не переводится на TLS — учётные данные, содержимое писем и вложения доступны для пассивного перехвата на любом промежуточном сетевом узле.</p><p><strong>Последствия:</strong> полная компрометация SMTP-трафика. Перехват логинов/паролей почтовых ящиков. КоАП РФ ст.13.11 — нарушение требований к защите ПДн.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">DNSSEC Absent</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 3.1</div>
+                    </div>
+                    <div class="finding-desc">DNSSEC для домена <code>example.com</code> не настроен — зона открыта для DNS cache poisoning и подмены записей через MITM. Флаги DO и AD отсутствуют в ответах резолверов. Возможна подмена A-записи без детекта, перехват почтового трафика, компрометация ACME-верификации.</div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">DMARC Absent</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 3.1</div>
+                    </div>
+                    <div class="finding-desc">DMARC-запись для домена <code>example.com</code> отсутствует — политика обработки email-трафика не определена. Запрос <code>_dmarc.example.com</code> возвращает пустой ответ. SPF и DKIM без DMARC не защищают от спуфинга заголовка From. Фишинговые письма от имени @example.com принимаются без верификации.</div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">DKIM Absent</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 3.1</div>
+                    </div>
+                    <div class="finding-desc">DKIM-подпись для домена <code>example.com</code> не настроена — исходящие письма не имеют криптографической подписи. Селектор default.<code>_domainkey.example.com</code> не вернул DKIM-ключа. Легитимные письма могут отбраковываться, подделка упрощается.</div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">SPF Absent</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 3.1</div>
+                    </div>
+                    <div class="finding-desc">SPF-запись для домена <code>example.com</code> не обнаружена — любой почтовый сервер может отправлять письма от имени домена. TXT-запись не содержит <code>v=spf1</code>. Email-спуфинг без ограничений, фишинг с поддельного адреса @example.com.</div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-1021</div>
+                            <div class="finding-title">Cross-Origin Isolation Missing (XS-Leaks Risk)</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 3.1</div>
+                    </div>
+                    <div class="finding-desc"><p>Не настроены современные заголовки изоляции: <code>Cross-Origin-Resource-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Embedder-Policy</code>.</p><p><strong>Бизнес-риск:</strong> Уязвимости класса XS-Leaks. Атакующий может определить статус авторизации пользователя на сайте, историю посещений или читать данные между вкладками, если на сайте есть XSS-уязвимость.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-284</div>
+                            <div class="finding-title">Открытые порты: 3</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 2.0</div>
+                    </div>
+                    <div class="finding-desc"><p>Обнаружено открытых портов: <code>21/FTP, 80/HTTP, 443/HTTPS</code>.</p><p><em>Регуляторный контекст: 152-ФЗ ст.19: Обеспечение безопасности ПДн при их обработке в ИСПДн. КоАП РФ ст.13.11: Нарушение требований защиты информации (штрафы до 500 000 ₽). Приказ ФСТЭК №21: Контроль сетевого доступа, ограничение программного окружения.</em></p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting Summary — 6 Endpoints Unprotected</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.0</div>
+                    </div>
+                    <div class="finding-desc"><p>Обнаружено <strong>6</strong> незащищённых эндпоинтов на домене <code>example.com</code>. Ни один из них не блокирует повторные запросы — злоумышленник может перебирать учётные данные без ограничений по скорости и количеству попыток.</p><p><strong>Последствия:</strong> полная компрометация учётных записей через брутфорс. Утечка ПДн пользователей. DDoS на эндпоинты аутентификации.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting Not Configured — 6 Critical Endpoints Unprotected</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.3</div>
+                    </div>
+                    <div class="finding-desc"><p>Обнаружено <strong>6</strong> критичных эндпоинтов без защиты от перебора на домене <code>example.com</code>. 5 запросов обработаны без единой блокировки.</p><p>Заголовки <code>Retry-After</code> и <code>X-RateLimit-*</code> отсутствуют — сервер не информирует клиента о лимитах.</p><p><strong>Последствия:</strong> 6 эндпоинтов открыты для неограниченного брутфорса. Кража аккаунтов, доступ к платёжным данным. Критичное несоответствие 152-ФЗ и ФСТЭК.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting: Форма входа — Partial Protection</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.0</div>
+                    </div>
+                    <div class="finding-desc"><p>Эндпоинт <code>/login/</code> (POST) — Форма входа. Отправлено <strong>5</strong> запросов, заблокировано <strong>0</strong>, пропущено <strong>0</strong>.</p><p>Заголовок <code>Retry-After</code> отсутствует. Заголовки <code>X-RateLimit-*</code> отсутствуют.</p><p><strong>Последствия:</strong> Частичная защита. Часть запросов проходит.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting: API — Partial Protection</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.0</div>
+                    </div>
+                    <div class="finding-desc"><p>Эндпоинт <code>/api/v1/</code> (GET) — API. Отправлено <strong>5</strong> запросов, заблокировано <strong>0</strong>, пропущено <strong>0</strong>.</p><p>Заголовок <code>Retry-After</code> отсутствует. Заголовки <code>X-RateLimit-*</code> отсутствуют.</p><p><strong>Последствия:</strong> Частичная защита. Часть запросов проходит.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting: Регистрация — Partial Protection</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.0</div>
+                    </div>
+                    <div class="finding-desc"><p>Эндпоинт <code>/register/</code> (POST) — Регистрация. Отправлено <strong>5</strong> запросов, заблокировано <strong>0</strong>, пропущено <strong>0</strong>.</p><p>Заголовок <code>Retry-After</code> отсутствует. Заголовки <code>X-RateLimit-*</code> отсутствуют.</p><p><strong>Последствия:</strong> Частичная защита. Часть запросов проходит.</p></div>
+                </div>
+
+                <div class="finding sev-low">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting: Корзина/заказ — Partial Protection</div>
+                        </div>
+                        <div class="finding-cvss cvss-low">CVSS 5.0</div>
+                    </div>
+                    <div class="finding-desc"><p>Эндпоинт <code>/cart/</code> (POST) — Корзина/заказ. Отправлено <strong>5</strong> запросов, заблокировано <strong>0</strong>, пропущено <strong>0</strong>.</p><p>Заголовок <code>Retry-After</code> отсутствует. Заголовки <code>X-RateLimit-*</code> отсутствуют.</p><p><strong>Последствия:</strong> Частичная защита. Часть запросов проходит.</p></div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <section class="category-block sev-info">
+        <div class="category-header" onclick="toggleCategory(this)">
+            <div class="category-title">
+                <div class="severity-indicator"></div>
+                <div>
+                    <div class="category-name">Informational Findings</div><span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); letter-spacing: 0.1em; margin-left: var(--space-sm);">L1</span>
+                    <div class="category-count">27 сигнал · информационный характер</div>
+                </div>
+            </div>
+            <div class="category-meta">
+                <span class="severity-tag tag-info">INFO</span>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+        </div>
+        <div class="category-body">
+            <div class="category-content">
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-778</div>
+                            <div class="finding-title">TLS Reporting Not Configured</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>TLS-RPT для домена <code>example.com</code> не настроен. Администратор не получает отчёты о сбоях TLS-шифрования при доставке исходящей почты на внешние серверы.</p><p>DNS-запись <code>_smtp._tls.example.com</code> не содержит <code>v=TLSRPTv1</code>. Партнёрские MX-серверы не отправляют информацию о проблемах с сертификатами, downgrade-атаках и ошибках валидации.</p><p><strong>Последствия:</strong> невозможность обнаружить целенаправленную MITM-атаку на исходящую почту. Отсутствие мониторинга безопасности SMTP-трафика.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-1007</div>
+                            <div class="finding-title">BIMI Not Configured</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>BIMI для домена <code>example.com</code> не настроен. Верифицированный логотип организации не отображается в почтовых клиентах (Gmail, Apple Mail, Yahoo) рядом с входящими письмами.</p><p>DNS-запись <code>default._bimi.example.com</code> не содержит <code>v=BIMI1</code>. Сертификат VMC (Verified Mark Certificate) не выпущен — получатели видят стандартный аватар вместо брендированного логотипа.</p><p><strong>Последствия:</strong> снижение визуального доверия к письмам. Пользователи не отличают подлинную корпоративную рассылку от фишинговой. Ослабление защиты от спуфинга на уровне восприятия.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-778</div>
+                            <div class="finding-title">Email Security Summary</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Сводная оценка защищённости email-инфраструктуры домена <code>example.com</code>.</p><p>MTA-STS: - (mode: none)</p><p>TLS-RPT: -</p><p>BIMI: - (логотип: -)</p><p>SMTP STARTTLS: -</p><p>MX-записей: 0</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">CAA Absent</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">CAA-запись для домена <code>example.com</code> не обнаружена — любой центр сертификации может выпустить TLS-сертификат без ограничений. Запрос CAA вернул пустой ответ. Риск выпуска сертификата на подставной сервер, возможен MITM.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">DNS A/AAAA: 1 records</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>IP: 92.255.106.152</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-284</div>
+                            <div class="finding-title">HTTP Headers Analysis Failed</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">Не удалось получить заголовки безопасности для <code>example.com</code>: HTTPSConnectionPool(host='%3ccode%3eexample.com%3c', port=443): Max retries exceeded with url: /code%3E (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x720a047cb0>: Failed to establish a new connection: [Errno 7] No address associated with hostname')).</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">JavaScript-библиотека: jQuery</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">JavaScript-библиотека <code>jQuery</code> обнаружена на страницах домена <code>example.com</code>. Клиентский код использует данную библиотеку. Определение точной версии позволяет выявить известные уязвимости (XSS, prototype pollution). Вектор для атак на цепочку поставок.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">JavaScript-библиотека: Bootstrap</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">JavaScript-библиотека <code>Bootstrap</code> обнаружена на страницах домена <code>example.com</code>. Клиентский код использует данную библиотеку. Определение точной версии позволяет выявить известные уязвимости (XSS, prototype pollution). Вектор для атак на цепочку поставок.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">JavaScript-библиотека: Swiper</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">JavaScript-библиотека <code>Swiper</code> обнаружена на страницах домена <code>example.com</code>. Клиентский код использует данную библиотеку. Определение точной версии позволяет выявить известные уязвимости (XSS, prototype pollution). Вектор для атак на цепочку поставок.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">JavaScript-библиотека: Fancybox</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">JavaScript-библиотека <code>Fancybox</code> обнаружена на страницах домена <code>example.com</code>. Клиентский код использует данную библиотеку. Определение точной версии позволяет выявить известные уязвимости (XSS, prototype pollution). Вектор для атак на цепочку поставок.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Аналитика: Yandex Metrika</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">Система аналитики <code>Yandex Metrika</code> обнаружена на <code>example.com</code>. Код отслеживания загружается на каждой странице. При компрометации счётчика — утечка данных о посетителях, их поведении и геолокации.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">CMS: 1C-Bitrix Bitrix Site Manager</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Обнаружена CMS <code>1C-Bitrix</code> . Платформа управления контентом на <code>example.com</code>. Критично: версия определяет доступные векторы эксплуатации (SQLi, RCE, авторизация).</p><p><strong>Значение для разведки:</strong> злоумышленник точно определяет технологический стек и подбирает эксплоиты под конкретные версии компонентов.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Implied: PHP</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Технология <code>PHP</code> имплицитно обнаружена на <code>example.com</code> через косвенные признаки. . Косвенное обнаружение указывает на серверную инфраструктуру без прямого раскрытия.</p><p><strong>Значение для разведки:</strong> злоумышленник точно определяет технологический стек и подбирает эксплоиты под конкретные версии компонентов.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Implied: MySQL</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Технология <code>MySQL</code> имплицитно обнаружена на <code>example.com</code> через косвенные признаки. . Косвенное обнаружение указывает на серверную инфраструктуру без прямого раскрытия.</p><p><strong>Значение для разведки:</strong> злоумышленник точно определяет технологический стек и подбирает эксплоиты под конкретные версии компонентов.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Implied: Nginx/Apache</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Технология <code>Nginx/Apache</code> имплицитно обнаружена на <code>example.com</code> через косвенные признаки. . Косвенное обнаружение указывает на серверную инфраструктуру без прямого раскрытия.</p><p><strong>Значение для разведки:</strong> злоумышленник точно определяет технологический стек и подбирает эксплоиты под конкретные версии компонентов.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">JS Library: jQuery</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>JavaScript-библиотека <code>jQuery</code> обнаружена на <code>example.com</code>. Версия не определена. Вектор для атак на цепочку поставок (supply chain) и эксплуатации клиентских уязвимостей.</p><p><strong>Значение для разведки:</strong> злоумышленник точно определяет технологический стек и подбирает эксплоиты под конкретные версии компонентов.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">CSS Framework: Bootstrap</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>CSS-фреймворк <code>Bootstrap</code> используется на <code>example.com</code>. Определяет структуру вёрстки и возможные точки внедрения CSS-injection атак.</p><p><strong>Значение для разведки:</strong> злоумышленник точно определяет технологический стек и подбирает эксплоиты под конкретные версии компонентов.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-327</div>
+                            <div class="finding-title">SSL/TLS Summary</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">SSL/TLS для <code>example.com</code>: версия TLS 1.3, HSTS отсутствует.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">WAF Detected: DDoS-Guard</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Обнаружен WAF/CDN: <code>DDoS-Guard</code>.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Hosting Discovery</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">Хостинг <code>example.com</code>: IP 92.255.106.152, St Petersburg, Russia. Провайдер: JSC "TIMEWEB" (ASN AS9123 JSC TIMEWEB). Хостинг: Unknown. Веб-сервер: Unknown, стек: . Возраст домена: 2001-11-22 21:00:00+00:00, регистратор: RU-CENTER-RU.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Infrastructure Snapshot: 92.255.106.152</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">Снапшот инфраструктуры <code>92.255.106.152</code>: проанализировано узлов 1, открыто портов 3.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-284</div>
+                            <div class="finding-title">Cookie Security Summary</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc">Cookie для <code>example.com</code>: всего 0, Secure 0/0, HttpOnly 0/0, SameSite 0/0. Сессионных: 0, с PII: 0.</div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Stealth Origin IP: 92.255.106.152 (Dns Bruteforce)</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p><strong>Потенциальный Origin IP (Минуя WAF):</strong> <code>92.255.106.152</code></p><p>Вектор обнаружения: <code>dns_bruteforce</code></p><p>Домен: <code>www.example.com</code></p><p>Инфраструктура: <code>AS2018 | 152.106.128.0/17</code></p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Stealth Origin IP: 91.189.116.41 (Dns Bruteforce)</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p><strong>Потенциальный Origin IP (Минуя WAF):</strong> <code>91.189.116.41</code></p><p>Вектор обнаружения: <code>dns_bruteforce</code></p><p>Домен: <code>mail.example.com</code></p><p>Инфраструктура: <code>AS12091 | 41.116.128.0/17</code></p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-200</div>
+                            <div class="finding-title">Стек технологий: Скрыт (WAF/CDN блокировка)</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Сайт защищен WAF (QRATOR, Cloudflare), который блокирует анализ.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting: Главная страница — Partial Protection</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Эндпоинт <code>/</code> (GET) — Главная страница. Отправлено <strong>5</strong> запросов, заблокировано <strong>0</strong>, пропущено <strong>0</strong>.</p><p>Заголовок <code>Retry-After</code> отсутствует. Заголовки <code>X-RateLimit-*</code> отсутствуют.</p><p><strong>Последствия:</strong> Частичная защита. Часть запросов проходит.</p></div>
+                </div>
+
+                <div class="finding sev-info">
+                    <div class="finding-header">
+                        <div>
+                            <div class="finding-id">CWE-770</div>
+                            <div class="finding-title">Rate Limiting: Поиск — Partial Protection</div>
+                        </div>
+                    </div>
+                    <div class="finding-desc"><p>Эндпоинт <code>/search/</code> (GET) — Поиск. Отправлено <strong>5</strong> запросов, заблокировано <strong>0</strong>, пропущено <strong>0</strong>.</p><p>Заголовок <code>Retry-After</code> отсутствует. Заголовки <code>X-RateLimit-*</code> отсутствуют.</p><p><strong>Последствия:</strong> Частичная защита. Часть запросов проходит.</p></div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="idx">05</span>
+                <span>Хронология аудита</span>
+            </div>
+            <div class="section-badge">TIMELINE · 03.07.2026</div>
+        </div>
+        <div class="section-body">
+            <div class="timeline">
+
+                <div class="timeline-item">
+                    <div class="timeline-time">21:50:42</div>
+                    <div class="timeline-text"><strong>Инициализация</strong> · определение цели, запуск движка</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:50:46</div>
+                    <div class="timeline-text"><strong>Разведка</strong> · WHOIS, DNS, поддомены, порты, WAF</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:50:55</div>
+                    <div class="timeline-text"><strong>Инфраструктура</strong> · SSL/TLS, заголовки, cookie, email, SPF, DMARC</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:51:03</div>
+                    <div class="timeline-text"><strong>Технологии</strong> · техстек, CMS, фреймворки, JS-библиотеки</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:51:12</div>
+                    <div class="timeline-text"><strong>L2</strong> · инъекции и валидация (SQLi, XSS, SSTI, command injection)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:51:12</div>
+                    <div class="timeline-text"><strong>L2</strong> · аутентификация и авторизация (JWT, cookies, IDOR, CORS)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:51:12</div>
+                    <div class="timeline-text"><strong>L2</strong> · конфигурация и API (CSP, HSTS, TLS, GraphQL, фаззинг)</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:51:12</div>
+                    <div class="timeline-text"><strong>Валидация находок</strong> · severity, CVSS, CWE, подтверждение</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">21:54:41</div>
+                    <div class="timeline-text"><strong style="color: #00E676;">Завершение</strong> · формирование отчёта, расчёт SHA-256, подпись <span style="font-family: var(--font-mono); font-size: 9px; color: #00E676; padding: 2px 6px; border: 1px solid rgba(0, 230, 118, 0.3); border-radius: 4px; margin-left: 8px; background: rgba(0, 230, 118, 0.05);">SUCCESS</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="sources" style="margin-top: var(--space-lg); padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); line-height: 1.8;">
+            <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Источники:</span><br>
+            OWASP Testing Guide v4.2 · MITRE ATT&amp;CK v16 · PT AFK v3 · ГОСТ Р 57580.1-2017
+        </div>
+
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="idx">06</span>
+                <span>Приоритетные рекомендации</span>
+            </div>
+            <div class="section-badge">ROADMAP</div>
+        </div>
+        <div class="section-body">
+            <div class="rec-list">
+
+
+                <!-- P0 · 24Ч -->
+                <div style="font-size: 10px; font-weight: 700; color: var(--critical); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-sm); padding-left: var(--space-sm);">P0 · Критично · 24 часа</div>
+                
+                <div class="rec-item">
+                    <div class="rec-num">01</div>
+                    <div class="rec-content">
+                        <div class="rec-title">CSP Missing</div>
+                        <div class="rec-desc">Эксплуатация возможна удалённо без аутентификации. Требует немедленного реагирования.</div>
+                        <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <span>~4ч · ~0 ₽</span><span style="color: var(--accent); font-weight: 600;">PANTHEON</span>
+                        </div>
+                    </div>
+                    <div class="rec-priority priority-urgent">24Ч</div>
+                </div>
+                <div class="rec-item">
+                    <div class="rec-num">02</div>
+                    <div class="rec-content">
+                        <div class="rec-title">HSTS (HSTS) Missing</div>
+                        <div class="rec-desc">Эксплуатация возможна удалённо без аутентификации. Требует немедленного реагирования.</div>
+                        <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <span>~4ч · ~0 ₽</span><span style="color: var(--accent); font-weight: 600;">PANTHEON</span>
+                        </div>
+                    </div>
+                    <div class="rec-priority priority-urgent">24Ч</div>
+                </div>
+                <div class="rec-item">
+                    <div class="rec-num">03</div>
+                    <div class="rec-content">
+                        <div class="rec-title">Clickjacking  (X-Frame-Options / CSP)</div>
+                        <div class="rec-desc">Эксплуатация возможна удалённо без аутентификации. Требует немедленного реагирования.</div>
+                        <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <span>~4ч · ~0 ₽</span><span style="color: var(--accent); font-weight: 600;">PANTHEON</span>
+                        </div>
+                    </div>
+                    <div class="rec-priority priority-urgent">24Ч</div>
+                </div>
+
+                <!-- P1 · 7 ДНЕЙ -->
+                <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-left: var(--space-sm);">P1 · Высокий приоритет · 7 дней</div>
+                
+                <div class="rec-item">
+                    <div class="rec-num">04</div>
+                    <div class="rec-content">
+                        <div class="rec-title">Infrastructure Leak via MX Record</div>
+                        <div class="rec-desc">Вектор атаки подтверждён. При стечении условий приводит к компрометации данных.</div>
+                        <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <span>~2ч · ~0 ₽</span><span style="color: var(--accent); font-weight: 600;">PANTHEON</span>
+                        </div>
+                    </div>
+                    <div class="rec-priority priority-soon">7 ДНЕЙ</div>
+                </div>
+                <div class="rec-item">
+                    <div class="rec-num">05</div>
+                    <div class="rec-content">
+                        <div class="rec-title">Security Headers Posture Assessment (Grade: F)</div>
+                        <div class="rec-desc">Вектор атаки подтверждён. При стечении условий приводит к компрометации данных.</div>
+                        <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <span>~2ч · ~0 ₽</span><span style="color: var(--accent); font-weight: 600;">PANTHEON</span>
+                        </div>
+                    </div>
+                    <div class="rec-priority priority-soon">7 ДНЕЙ</div>
+                </div>
+
+                <!-- P2 · 30 ДНЕЙ -->
+                <div style="font-size: 10px; font-weight: 700; color: var(--medium); text-transform: uppercase; letter-spacing: 0.1em; margin-top: var(--space-md); margin-bottom: var(--space-sm); padding-left: var(--space-sm);">P2 · Плановые · 30 дней</div>
+                
+                <div class="rec-item">
+                    <div class="rec-num">06</div>
+                    <div class="rec-content">
+                        <div class="rec-title">MTA-STS Not Configured</div>
+                        <div class="rec-desc">Снижает поверхность атаки. Рекомендуется к плановому устранению.</div>
+                        <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <span>~1ч · ~3000 ₽</span><span style="color: var(--accent); font-weight: 600;">PANTHEON</span>
+                        </div>
+                    </div>
+                    <div class="rec-priority priority-planned">30 ДНЕЙ</div>
+                </div>
+                <div class="rec-item">
+                    <div class="rec-num">07</div>
+                    <div class="rec-content">
+                        <div class="rec-title">SMTP STARTTLS Not Supported</div>
+                        <div class="rec-desc">Снижает поверхность атаки. Рекомендуется к плановому устранению.</div>
+                        <div style="margin-top: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                            <span>~1ч · ~5000 ₽</span><span style="color: var(--accent); font-weight: 600;">PANTHEON</span>
+                        </div>
+                    </div>
+                    <div class="rec-priority priority-planned">30 ДНЕЙ</div>
+                </div>
+
+            </div>
+
+            <div style="margin-top: var(--space-lg); padding: var(--space-md) var(--space-lg); background: var(--bg-surface); border: 1px solid var(--accent); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-sm);">
+                <span style="color: var(--text-muted);">Итого по смете:</span> <span style="color: var(--accent); font-weight: 700;">~15.5 ч</span> <span style="color: var(--text-muted);">·</span> <span style="color: var(--accent); font-weight: 700;">~46 500 ₽</span> <span style="color: var(--text-muted);">|</span> <span>Исп.: PANTHEON (Е. Свириденко)</span>
+            </div>
+
+            <div class="sources" style="margin-top: var(--space-lg); padding: var(--space-md) var(--space-lg); border-top: 1px solid var(--border); font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); line-height: 1.8;">
+                <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Источники:</span><br>
+                OWASP Top 10:2021 · CWE Top 25 (2025) · NIST NVD CVSS v3.1 · ГОСТ Р 57580.1-2017 · 152-ФЗ «О персональных данных»
+            </div>
+        </div>
+    </section>
+
+    <!-- ДАЛЬНЕЙШИЕ ДЕЙСТВИЯ -->
+    <section class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="idx">07</span>
+                <span>Дальнейшие действия</span>
+            </div>
+            <div class="section-badge">UPSELL</div>
+        </div>
+        <div class="section-body">
+            
+            <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+                <div style="padding: var(--space-lg); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                    <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm);">
+                        <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-muted); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm);">1</span>
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Передать программистам (самостоятельно)</span>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-left: 44px; line-height: 1.6;">
+                        Скопируйте «Решение» разработчику. Бесплатно, но без гарантии.
+                    </p>
+                </div>
+
+                <div style="padding: var(--space-lg); background: var(--bg-surface); border: 1px solid var(--border-accent); border-radius: var(--radius-md); border-left: 3px solid var(--accent);">
+                    <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm);">
+                        <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: rgba(0, 212, 255, 0.08); border: 1px solid var(--border-accent); border-radius: var(--radius-sm);">2</span>
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Автоматизированная эксплуатация (Тариф SENTINEL)</span>
+                        <span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; background: rgba(0, 212, 255, 0.1); color: var(--accent); border-radius: var(--radius-sm); letter-spacing: 0.05em;">19 900 ₽</span>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-left: 44px; line-height: 1.6;">
+                        Модули L3 извлекут хеши, прочитают файлы сервера. Отчёт «Хакерская разведка».
+                    </p>
+                </div>
+
+                <div style="padding: var(--space-lg); background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                    <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-sm);">
+                        <span style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-muted); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-sm);">3</span>
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Ручная проверка White-Hat экспертом</span>
+                        <span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; background: rgba(0, 230, 118, 0.1); color: var(--primary); border-radius: var(--radius-sm); letter-spacing: 0.05em;">По запросу</span>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-left: 44px; line-height: 1.6;">
+                        Официальный акт с подписью для банка или Роскомнадзора. Ручное подтверждение, тестовые данные, протокол.
+                    </p>
+                </div>
+            </div>
+
+            <div style="margin-top: var(--space-lg); padding: var(--space-md); background: rgba(0, 212, 255, 0.03); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center; font-size: 12px; color: var(--text-secondary);">
+                Контакты: <a href="https://t.me/evsviridenko" target="_blank" style="color: var(--accent); text-decoration: none; font-family: var(--font-mono);">@evsviridenko</a> · <a href="https://vk.ru/evsviridenko" style="color: var(--accent); text-decoration: none; font-family: var(--font-mono);">vk.ru/evsviridenko</a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="report-footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <div class="footer-title">Исполнитель</div>
+            <div class="executor-name">Евгений Свириденко</div>
+            <div class="executor-role" style="margin-top: 0;">Security Researcher & Founder, PANTHEON</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Аудит · Эксплуатация (L3) · Инцидент-респонс</div>
+            <div class="contact-item" style="margin-top: 4px;">
+                <span>Telegram:</span>
+                <a href="https://t.me/evsviridenko" target="_blank">@evsviridenko</a>
+            </div>
+            <div class="contact-item">
+                <span>Email:</span>
+                <a href="https://vk.ru/evsviridenko">vk.ru/evsviridenko</a>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <div class="footer-title">Методология</div>
+            <div class="footer-methodology">
+                OWASP Top 10 (2021) · PT AFK v3 · 152-ФЗ · MITRE ATT&amp;CK · CVSS v3.1 · ГОСТ Р 57580.1
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-disclaimer" style="padding: var(--space-md); background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-left: 3px solid #F59E0B; border-radius: var(--radius-sm); margin: var(--space-lg) 0;">
+        <div class="disclaimer-text" style="font-size: 11px; color: var(--text-secondary); line-height: 1.6;"><strong style="color: #F59E0B; font-family: var(--font-mono);">TLP:AMBER</strong> · 
+            Все проверки выполнены в режиме чтения без модификации данных. Отчёт предназначен исключительно для указанного получателя. Содержит конфиденциальную информацию.
+        </div>
+    </div>
+
+    <div class="footer-hash">
+        <div class="hash-item">
+            <span>SHA-256:</span>
+            <span class="hash-value">be6338c1355cfd61d4d62cd156fa3daf366d015c0bd5ead6d049777b4ee8e455</span>
+        </div>
+        <div class="hash-item">
+            <span>Timestamp:</span>
+            <span class="hash-value">2026-07-03T21:54:44+03:00</span>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: var(--space-lg); font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; opacity: 0.8;">
+        <span style="color: var(--accent);">[</span> EOF <span style="color: var(--accent);">]</span> · <span style="color: #00E676;">EXIT 0</span> · CONNECTION CLOSED
+        </div>
+    <div class="footer-copyright">
+        © 2026 PANTHEON. Все права защищены.
+    </div>
+</footer>
+
+<script>
+    function toggleCategory(header) {
+        const block = header.parentElement;
+        block.classList.toggle('open');
+    }
+
+    window.addEventListener('load', () => {
+        const bars = document.querySelectorAll('.dist-bar-fill');
+        bars.forEach(bar => {
+            const target = bar.style.width;
+            bar.style.width = '0%';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    bar.style.width = target;
+                });
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
