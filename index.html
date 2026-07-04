@@ -105,10 +105,10 @@
         .section-label { font-family: var(--font-mono); font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; display: block; }
 
         /* --- GOD MODE --- */
-        .godmode-diagram { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 48px 24px; margin-top: 32px; position: relative; overflow: hidden; }
+        .godmode-diagram { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 48px 24px; margin-top: 32px; position: relative; }
         .gm-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; position: relative; }
         .gm-row:last-child { margin-bottom: 0; }
-        .gm-node { background: var(--bg-surface); border: 1px solid var(--border-light); padding: 16px 24px; border-radius: 8px; text-align: center; position: relative; z-index: 2; min-width: 120px; }
+        .gm-node { background: var(--bg-surface); border: 2px solid var(--border-light); padding: 16px 24px; border-radius: 8px; text-align: center; position: relative; z-index: 2; min-width: 120px; }
         .gm-node.attacker { border-color: var(--critical); }
         .gm-node.waf { border-color: var(--accent); }
         .gm-node.origin { border-color: var(--primary); }
@@ -118,9 +118,9 @@
         .gm-status.blocked { color: var(--critical); }
         .gm-status.bypassed { color: var(--primary); }
         .gm-line { flex-grow: 1; height: 2px; background: var(--border-light); margin: 0 16px; position: relative; }
-        .gm-packet { position: absolute; top: -3px; width: 8px; height: 8px; border-radius: 50%; }
-        .gm-packet.red { background: var(--critical); animation: packet-move 2s linear infinite; }
-        .gm-packet.green { background: var(--primary); animation: packet-move 2s linear infinite 1s; }
+        .gm-packet { position: absolute; top: -5px; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+        .gm-packet.red { background: #EF4444; box-shadow: 0 0 12px #EF4444; animation: packet-move 2s linear infinite; }
+        .gm-packet.green { background: #00E676; box-shadow: 0 0 12px #00E676; animation: packet-move 2s linear infinite 1s; }
         @keyframes packet-move { 0% { left: 0; } 100% { left: 100%; } }
         .gm-text { margin-top: 32px; font-size: 14px; color: var(--text-muted); line-height: 1.4; }
         
